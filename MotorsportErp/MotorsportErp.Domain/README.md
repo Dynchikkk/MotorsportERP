@@ -1,0 +1,3 @@
+## MotorsportErp.Domain
+
+Business model

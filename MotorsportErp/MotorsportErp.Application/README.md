@@ -1,0 +1,3 @@
+## MotorsportErp.Application
+
+Business logic
