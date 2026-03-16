@@ -1,4 +1,4 @@
-﻿namespace MotorsportErp.Models.Entities.Cars;
+﻿namespace MotorsportErp.Domain.Cars;
 
 public enum CarClass
 {

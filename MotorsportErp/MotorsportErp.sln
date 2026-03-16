@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36203.30 d17.14
+VisualStudioVersion = 17.14.36203.30
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotorsportErp.Models", "MotorsportErp.Models\MotorsportErp.Models.csproj", "{3F7D18FA-0DA1-4EE1-9BEA-7FBDD851776E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotorsportErp.Domain", "MotorsportErp.Domain\MotorsportErp.Domain.csproj", "{231D1F28-B22B-46FD-942D-CDF77008BEC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3F7D18FA-0DA1-4EE1-9BEA-7FBDD851776E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F7D18FA-0DA1-4EE1-9BEA-7FBDD851776E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3F7D18FA-0DA1-4EE1-9BEA-7FBDD851776E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3F7D18FA-0DA1-4EE1-9BEA-7FBDD851776E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{231D1F28-B22B-46FD-942D-CDF77008BEC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{231D1F28-B22B-46FD-942D-CDF77008BEC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{231D1F28-B22B-46FD-942D-CDF77008BEC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{231D1F28-B22B-46FD-942D-CDF77008BEC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

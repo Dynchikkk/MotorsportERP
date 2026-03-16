@@ -1,4 +1,4 @@
-﻿namespace MotorsportErp.Models.Base;
+﻿namespace MotorsportErp.Domain.BaseEntities;
 
 public abstract class BaseEntity<TId>
 {

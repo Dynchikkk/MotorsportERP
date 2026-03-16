@@ -1,7 +1,7 @@
-﻿using MotorsportErp.Models.Base;
-using MotorsportErp.Models.Entities.Users;
+﻿using MotorsportErp.Domain.BaseEntities;
+using MotorsportErp.Domain.Users;
 
-namespace MotorsportErp.Models.Entities.Tournaments;
+namespace MotorsportErp.Domain.Tournaments;
 
 public class TournamentOrganizer : GuidEntity
 {

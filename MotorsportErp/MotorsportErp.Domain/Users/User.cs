@@ -1,13 +1,13 @@
-﻿using MotorsportErp.Models.Base;
-using MotorsportErp.Models.Entities.Cars;
-using MotorsportErp.Models.Entities.Tournaments;
-using MotorsportErp.Models.Entities.Tracks;
+﻿using MotorsportErp.Domain.BaseEntities;
+using MotorsportErp.Domain.Cars;
+using MotorsportErp.Domain.Tournaments;
+using MotorsportErp.Domain.Tracks;
 
-namespace MotorsportErp.Models.Entities.Users;
+namespace MotorsportErp.Domain.Users;
 
 public class User : GuidEntity
 {
-    public UserRole Role { get; set; } = UserRole.Racer;
+    public UserRole Roles { get; set; } = UserRole.Racer;
 
     public required string Nickname { get; set; }
     public required string Email { get; set; }

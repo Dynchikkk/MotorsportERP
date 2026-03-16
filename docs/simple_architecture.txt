@@ -1,0 +1,130 @@
+# Architecture
+
+MotorsportErp.sln
+
+MotorsportErp.Domain
+MotorsportErp.Application
+MotorsportErp.Infrastructure
+MotorsportErp.WebApi
+MotorsportErp.Tests
+
+# 1. Domain (Ready)
+
+**MotorsportErp.Domain**
+
+Domain
+ ├ Cars
+ │   ├ Car
+ │   └ CarClass
+ │
+ ├ Tournaments
+ │   ├ Tournament
+ │   ├ TournamentApplication
+ │   ├ TournamentResult
+ │   ├ TournamentOrganizer
+ │   ├ TournamentStatus
+ │   └ TournamentApplicationStatus
+ │
+ ├ Tracks
+ │   ├ Track
+ │   ├ TrackStatus
+ │   └ TrackVote
+ │
+ ├ Users
+ │   ├ User
+ │   └ UserRole
+ │
+ └ BaseEntities
+     ├ BaseEntity
+     └ GuidEntity
+
+# 2. Application
+
+**MotorsportErp.Application** (Business logic)
+
+Application
+ ├ Interfaces
+ │   ├ Repositories
+ │   │   ├ IUserRepository
+ │   │   ├ ITrackRepository
+ │   │   ├ ITournamentRepository
+ │   │   └ ICarRepository
+ │   │
+ │   └ Services
+ │       ├ IUserService
+ │       ├ ITrackService
+ │       ├ ITournamentService
+ │       └ IAuthService
+ │
+ ├ Services
+ │   ├ UserService
+ │   ├ TrackService
+ │   ├ TournamentService
+ │   └ AuthService
+ │
+ ├ DTO
+ │   ├ Users
+ │   ├ Cars
+ │   ├ Tracks
+ │   └ Tournaments
+ │
+ └ Mapping
+     └ AutoMapperProfiles
+
+# 3. Infrastructure
+
+**MotorsportErp.Infrastructure** (Внешние системы)
+
+Infrastructure
+ ├ Persistence
+ │   ├ AppDbContext
+ │   ├ Configurations
+ │   │   ├ UserConfig
+ │   │   ├ TrackConfig
+ │   │   ├ TournamentConfig
+ │   │   └ CarConfig
+ │   │
+ │   └ Migrations
+ │
+ ├ Repositories
+ │   ├ UserRepository
+ │   ├ TrackRepository
+ │   ├ TournamentRepository
+ │   └ CarRepository
+ │
+ └ Auth
+     └ JwtTokenService
+
+# 4. WebApi
+
+**MotorsportErp.WebApi**
+
+WebApi
+ ├ Controllers
+ │   ├ AuthController
+ │   ├ UsersController
+ │   ├ CarsController
+ │   ├ TracksController
+ │   └ TournamentsController
+ │
+ ├ Middleware
+ │
+ ├ Extensions
+ │   ├ ServiceCollectionExtensions
+ │   └ AuthExtensions
+ │
+ └ Program.cs
+
+
+# 5. Tests
+
+**MotorsportErp.Tests**
+
+Tests
+ ├ Unit
+ │   ├ UserServiceTests
+ │   ├ TournamentServiceTests
+ │   └ TrackServiceTests
+ │
+ └ Integration
+     └ ApiTests

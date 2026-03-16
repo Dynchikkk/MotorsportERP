@@ -1,8 +1,8 @@
-﻿using MotorsportErp.Models.Base;
-using MotorsportErp.Models.Entities.Tournaments;
-using MotorsportErp.Models.Entities.Users;
+﻿using MotorsportErp.Domain.BaseEntities;
+using MotorsportErp.Domain.Tournaments;
+using MotorsportErp.Domain.Users;
 
-namespace MotorsportErp.Models.Entities.Cars;
+namespace MotorsportErp.Domain.Cars;
 
 public class Car : GuidEntity
 {

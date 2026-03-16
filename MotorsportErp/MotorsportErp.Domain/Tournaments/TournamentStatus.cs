@@ -1,4 +1,4 @@
-﻿namespace MotorsportErp.Models.Entities.Tournaments;
+﻿namespace MotorsportErp.Domain.Tournaments;
 
 public enum TournamentStatus
 {

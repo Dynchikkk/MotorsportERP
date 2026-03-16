@@ -1,8 +1,8 @@
-﻿using MotorsportErp.Models.Base;
-using MotorsportErp.Models.Entities.Tournaments;
-using MotorsportErp.Models.Entities.Users;
+﻿using MotorsportErp.Domain.BaseEntities;
+using MotorsportErp.Domain.Tournaments;
+using MotorsportErp.Domain.Users;
 
-namespace MotorsportErp.Models.Entities.Tracks;
+namespace MotorsportErp.Domain.Tracks;
 
 public class Track : GuidEntity
 {
@@ -12,8 +12,8 @@ public class Track : GuidEntity
     public required string Location { get; set; }
     public string? LayoutImageUrl { get; set; }
 
-    public int PopularityVotes { get; set; }
     public int ConfirmationThreshold { get; set; } = 10;
+    public int VoteCount => Votes.Count;
 
     // Navigation
 

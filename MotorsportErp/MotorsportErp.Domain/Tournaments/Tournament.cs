@@ -1,9 +1,9 @@
-﻿using MotorsportErp.Models.Base;
-using MotorsportErp.Models.Entities.Cars;
-using MotorsportErp.Models.Entities.Tracks;
-using MotorsportErp.Models.Entities.Users;
+﻿using MotorsportErp.Domain.BaseEntities;
+using MotorsportErp.Domain.Cars;
+using MotorsportErp.Domain.Tracks;
+using MotorsportErp.Domain.Users;
 
-namespace MotorsportErp.Models.Entities.Tournaments;
+namespace MotorsportErp.Domain.Tournaments;
 
 public class Tournament : GuidEntity
 {
@@ -16,6 +16,7 @@ public class Tournament : GuidEntity
 
     public CarClass AllowedCarClass { get; set; }
     public int RequiredRaceCount { get; set; }
+    public int RequiredParticipants { get; set; }
 
     // Navigation
 

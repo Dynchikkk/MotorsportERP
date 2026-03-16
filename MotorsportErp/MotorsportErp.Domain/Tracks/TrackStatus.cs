@@ -1,4 +1,4 @@
-﻿namespace MotorsportErp.Models.Entities.Tracks;
+﻿namespace MotorsportErp.Domain.Tracks;
 
 public enum TrackStatus
 {

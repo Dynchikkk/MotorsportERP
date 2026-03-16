@@ -6,4 +6,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="BaseEntities\" />
+    <Folder Include="Cars\" />
+    <Folder Include="Tournaments\" />
+    <Folder Include="Users\" />
+    <Folder Include="Tracks\" />
+  </ItemGroup>
+
 </Project>
