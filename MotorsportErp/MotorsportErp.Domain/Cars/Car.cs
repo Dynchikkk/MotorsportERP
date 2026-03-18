@@ -16,7 +16,7 @@ public class Car : GuidEntity
     // Navigation
 
     public Guid OwnerId { get; set; }
-    public required User Owner { get; set; }
+    public User Owner { get; set; } = null!;
 
     public ICollection<TournamentApplication> Applications { get; set; } = [];
 }

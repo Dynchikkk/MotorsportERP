@@ -18,7 +18,7 @@ public class Track : GuidEntity
     // Navigation
 
     public Guid CreatedById { get; set; }
-    public required User CreatedBy { get; set; }
+    public User CreatedBy { get; set; } = null!;
 
     public ICollection<TrackVote> Votes { get; set; } = [];
     public ICollection<Tournament> Tournaments { get; set; } = [];

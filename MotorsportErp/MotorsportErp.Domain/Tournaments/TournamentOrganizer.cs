@@ -9,5 +9,5 @@ public class TournamentOrganizer : GuidEntity
     public required Tournament Tournament { get; set; }
 
     public Guid UserId { get; set; }
-    public required User User { get; set; }
+    public User User { get; set; } = null!;
 }

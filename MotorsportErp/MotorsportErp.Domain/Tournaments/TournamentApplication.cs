@@ -15,5 +15,5 @@ public class TournamentApplication : GuidEntity
     public required Tournament Tournament { get; set; }
 
     public Guid CarId { get; set; }
-    public required Car Car { get; set; }
+    public Car Car { get; set; } = null!;
 }

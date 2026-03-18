@@ -21,10 +21,10 @@ public class Tournament : GuidEntity
     // Navigation
 
     public Guid TrackId { get; set; }
-    public required Track Track { get; set; }
+    public Track Track { get; set; } = null!;
 
     public Guid CreatorId { get; set; }
-    public required User Creator { get; set; }
+    public User Creator { get; set; } = null!;
 
     public ICollection<TournamentApplication> Applications { get; set; } = [];
     public ICollection<TournamentResult> Results { get; set; } = [];

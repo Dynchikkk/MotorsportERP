@@ -6,8 +6,8 @@ namespace MotorsportErp.Domain.Tracks;
 public class TrackVote : GuidEntity
 {
     public Guid UserId { get; set; }
-    public required User User { get; set; }
+    public User User { get; set; } = null!;
 
     public Guid TrackId { get; set; }
-    public required Track Track { get; set; }
+    public Track Track { get; set; } = null!;
 }
