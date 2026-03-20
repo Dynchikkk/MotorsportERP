@@ -15,4 +15,6 @@ public interface ITournamentRepository : IBaseRepository<Tournament>
     Task<List<TournamentApplication>> GetApplicationsByTournamentIdAsync(Guid tournamentId);
 
     Task AddResultAsync(TournamentResult result);
+
+    Task<bool> HasUserAppliedAsync(Guid tournamentId, Guid userId);
 }

@@ -14,9 +14,13 @@ public interface ITournamentService
 
     Task ApplyAsync(Guid userId, TournamentApplyRequest request);
 
-    Task ApproveApplicationAsync(Guid applicationId);
+    Task ApproveApplicationAsync(Guid userId, Guid applicationId);
 
-    Task RejectApplicationAsync(Guid applicationId);
+    Task RejectApplicationAsync(Guid userId, Guid applicationId);
 
-    Task AddResultAsync(Guid tournamentId, TournamentResultCreateRequest request);
+    Task AddResultAsync(Guid userId, Guid tournamentId, TournamentResultCreateRequest request);
+
+    Task StartTournamentAsync(Guid userId, Guid tournamentId);
+
+    Task FinishTournamentAsync(Guid userId, Guid tournamentId);
 }

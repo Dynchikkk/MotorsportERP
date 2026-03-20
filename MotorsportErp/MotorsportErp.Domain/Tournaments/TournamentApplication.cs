@@ -9,10 +9,10 @@ public class TournamentApplication : GuidEntity
     public TournamentApplicationStatus Status { get; set; } = TournamentApplicationStatus.Pending;
 
     public Guid UserId { get; set; }
-    public required User User { get; set; }
+    public User User { get; set; } = null!;
 
     public Guid TournamentId { get; set; }
-    public required Tournament Tournament { get; set; }
+    public Tournament Tournament { get; set; } = null!;
 
     public Guid CarId { get; set; }
     public Car Car { get; set; } = null!;
