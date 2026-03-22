@@ -54,9 +54,9 @@ public class TrackService : ITrackService
 
     public async Task VoteAsync(Guid userId, TrackVoteRequest request)
     {
-        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
-        var track = await _trackRepository.GetByIdAsync(request.TrackId) ?? throw new KeyNotFoundException("Track not found");
-        
+        Domain.Users.User user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        Track track = await _trackRepository.GetByIdAsync(request.TrackId) ?? throw new KeyNotFoundException("Track not found");
+
         if (track.Status != TrackStatus.Unofficial)
         {
             throw new InvalidOperationException("Voting is closed for this track");

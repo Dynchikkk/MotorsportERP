@@ -8,7 +8,7 @@ public interface ICarService
 
     Task<Guid> CreateAsync(Guid userId, CarCreateRequest request);
 
-    Task UpdateAsync(Guid carId, CarUpdateRequest request);
+    Task UpdateAsync(Guid userId, Guid carId, CarUpdateRequest request);
 
-    Task DeleteAsync(Guid carId);
+    Task DeleteAsync(Guid userId, Guid carId);
 }
