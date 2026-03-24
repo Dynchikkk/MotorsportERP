@@ -8,11 +8,9 @@ MotorsportErp.Infrastructure
 MotorsportErp.WebApi
 MotorsportErp.Tests
 
-# 1. Domain (Ready)
+# 1. Domain (Core business logic)
 
-**MotorsportErp.Domain**
-
-Domain
+MotorsportErp.Domain
  ├ Cars
  │   ├ Car
  │   └ CarClass
@@ -38,9 +36,10 @@ Domain
      ├ BaseEntity
      └ GuidEntity
 
-# 2. Application
 
-**MotorsportErp.Application** (Business logic)
+# 2. Application (Business logic)
+
+MotorsportErp.Application
 
 Application
  ├ Interfaces
@@ -48,18 +47,25 @@ Application
  │   │   ├ IUserRepository
  │   │   ├ ITrackRepository
  │   │   ├ ITournamentRepository
+ │   │   ├ ITournamentApplicationRepository
  │   │   └ ICarRepository
  │   │
- │   └ Services
- │       ├ IUserService
- │       ├ ITrackService
- │       ├ ITournamentService
- │       └ IAuthService
+ │   ├ Services
+ │   │   ├ IUserService
+ │   │   ├ ITrackService
+ │   │   ├ ITournamentService
+ │   │   ├ ICarService
+ │   │   └ IAuthService
+ │   │
+ │   └ Security
+ │       ├ IJwtProvider
+ │       └ IPasswordHasher
  │
  ├ Services
  │   ├ UserService
  │   ├ TrackService
  │   ├ TournamentService
+ │   ├ CarService
  │   └ AuthService
  │
  ├ DTO
@@ -68,36 +74,54 @@ Application
  │   ├ Tracks
  │   └ Tournaments
  │
- └ Mapping
-     └ AutoMapperProfiles
+ ├ Mappers
+ │   ├ UserMapper
+ │   ├ CarMapper
+ │   ├ TrackMapper
+ │   ├ TournamentMapper
+ │   └ AuthMapper
+ │
+ └ Settings
+     ├ TournamentSettings
+     └ TrackSettings
 
-# 3. Infrastructure
 
-**MotorsportErp.Infrastructure** (Внешние системы)
+# 3. Infrastructure (External dependencies)
+
+MotorsportErp.Infrastructure
 
 Infrastructure
  ├ Persistence
  │   ├ AppDbContext
+ │   │
  │   ├ Configurations
  │   │   ├ UserConfig
+ │   │   ├ CarConfig
  │   │   ├ TrackConfig
+ │   │   ├ TrackVoteConfig
  │   │   ├ TournamentConfig
- │   │   └ CarConfig
+ │   │   ├ TournamentApplicationConfig
+ │   │   ├ TournamentResultConfig
+ │   │   └ TournamentOrganizerConfig
  │   │
  │   └ Migrations
  │
  ├ Repositories
  │   ├ UserRepository
+ │   ├ CarRepository
  │   ├ TrackRepository
  │   ├ TournamentRepository
- │   └ CarRepository
+ │   └ TournamentApplicationRepository
  │
  └ Auth
-     └ JwtTokenService
+     ├ JwtProvider
+     ├ JwtSettings
+     └ PasswordHasher
 
-# 4. WebApi
 
-**MotorsportErp.WebApi**
+# 4. WebApi (Approximate variant)
+
+MotorsportErp.WebApi
 
 WebApi
  ├ Controllers
@@ -108,23 +132,25 @@ WebApi
  │   └ TournamentsController
  │
  ├ Middleware
+ │   └ ExceptionHandlingMiddleware (планируется)
  │
  ├ Extensions
- │   ├ ServiceCollectionExtensions
- │   └ AuthExtensions
+ │   ├ ServiceCollectionExtensions (DI)
+ │   └ AuthExtensions (JWT настройка)
  │
  └ Program.cs
 
 
-# 5. Tests
+# 5. Tests (Approximate variant)
 
-**MotorsportErp.Tests**
+MotorsportErp.Tests
 
 Tests
  ├ Unit
  │   ├ UserServiceTests
  │   ├ TournamentServiceTests
- │   └ TrackServiceTests
+ │   ├ TrackServiceTests
+ │   └ CarServiceTests (планируется)
  │
  └ Integration
      └ ApiTests
