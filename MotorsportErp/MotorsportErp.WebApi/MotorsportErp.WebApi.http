@@ -1,0 +1,6 @@
+@MotorsportErp.WebApi_HostAddress = http://localhost:5168
+
+GET {{MotorsportErp.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

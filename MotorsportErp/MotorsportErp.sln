@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotorsportErp.Application",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotorsportErp.Infrastructure", "MotorsportErp.Infrastructure\MotorsportErp.Infrastructure.csproj", "{8C180980-189C-44C2-936B-1C534B66110A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotorsportErp.WebApi", "MotorsportErp.WebApi\MotorsportErp.WebApi.csproj", "{FCAD36A9-8F17-4E5D-AC9D-49FF21BB57F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{8C180980-189C-44C2-936B-1C534B66110A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C180980-189C-44C2-936B-1C534B66110A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C180980-189C-44C2-936B-1C534B66110A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCAD36A9-8F17-4E5D-AC9D-49FF21BB57F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCAD36A9-8F17-4E5D-AC9D-49FF21BB57F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCAD36A9-8F17-4E5D-AC9D-49FF21BB57F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCAD36A9-8F17-4E5D-AC9D-49FF21BB57F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
