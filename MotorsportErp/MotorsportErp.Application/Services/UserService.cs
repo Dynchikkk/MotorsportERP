@@ -17,13 +17,60 @@ public class UserService : IUserService
 
     public async Task<UserResponse> GetByIdAsync(Guid id)
     {
-        User user = await _userRepository.GetByIdAsync(id) ?? throw new KeyNotFoundException("User not found");
+        var user = await _userRepository.GetByIdAsync(id)
+            ?? throw new KeyNotFoundException("User not found");
+
         return UserMapper.ToResponse(user);
     }
 
     public async Task<UserProfileResponse> GetProfileAsync(Guid id)
     {
-        User user = await _userRepository.GetByIdAsync(id) ?? throw new KeyNotFoundException("User not found");
+        var user = await _userRepository.GetByIdAsync(id)
+            ?? throw new KeyNotFoundException("User not found");
+
         return UserMapper.ToProfile(user);
+    }
+
+    public async Task AssignRoleAsync(Guid adminId, Guid targetUserId, UserRole role)
+    {
+        var admin = await _userRepository.GetByIdAsync(adminId)
+            ?? throw new KeyNotFoundException("Admin not found");
+
+        if (!admin.Roles.HasFlag(UserRole.SuperAdmin))
+        {
+            throw new UnauthorizedAccessException("Only super admin can assign roles");
+        }
+
+        if (role == UserRole.SuperAdmin)
+        {
+            throw new InvalidOperationException("Cannot assign SuperAdmin role");
+        }
+
+        var user = await _userRepository.GetByIdAsync(targetUserId)
+            ?? throw new KeyNotFoundException("User not found");
+
+        if (user.Roles.HasFlag(role))
+        {
+            throw new InvalidOperationException("User already has this role");
+        }
+
+        user.Roles |= role;
+
+        await _userRepository.UpdateAsync(user);
+    }
+
+    public async Task UpdateProfileAsync(Guid userId, UserUpdateRequest request)
+    {
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
+
+        if (string.IsNullOrWhiteSpace(request.Nickname))
+        {
+            throw new ArgumentException("Nickname cannot be empty");
+        }
+
+        user.Nickname = request.Nickname;
+
+        await _userRepository.UpdateAsync(user);
     }
 }

@@ -4,7 +4,9 @@ using MotorsportErp.Application.DTO.Tracks;
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Application.Interfaces.Services;
 using MotorsportErp.Application.Mappers;
+using MotorsportErp.Domain.Tournaments;
 using MotorsportErp.Domain.Tracks;
+using MotorsportErp.Domain.Users;
 
 namespace MotorsportErp.Application.Services;
 
@@ -40,7 +42,10 @@ public class TrackService : ITrackService
     {
         Domain.Users.User user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
 
-        if (user.RaceCount < _settings.MinRacesToCreate)
+        bool isPrivileged = user.Roles.HasFlag(UserRole.Moderator) ||
+                    user.Roles.HasFlag(UserRole.SuperAdmin);
+
+        if (!isPrivileged && user.RaceCount < _settings.MinRacesToCreate)
         {
             throw new UnauthorizedAccessException("Not enough races to create track");
         }
@@ -77,10 +82,113 @@ public class TrackService : ITrackService
 
         await _trackRepository.AddVoteAsync(vote);
 
-        if (track.VoteCount + 1 >= track.ConfirmationThreshold)
+        int newVoteCount = track.VoteCount + 1;
+        if (newVoteCount >= track.ConfirmationThreshold)
         {
             track.Status = TrackStatus.Confirmed;
-            await _trackRepository.UpdateAsync(track);
         }
+
+        await _trackRepository.UpdateAsync(track);
+    }
+
+    public async Task ConfirmAsync(Guid userId, Guid trackId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
+
+        var track = await _trackRepository.GetByIdAsync(trackId)
+            ?? throw new KeyNotFoundException("Track not found");
+
+        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) ||
+                           user.Roles.HasFlag(UserRole.SuperAdmin);
+
+        if (!isModerator)
+        {
+            throw new UnauthorizedAccessException("Only moderator can confirm track");
+        }
+
+        if (track.Status == TrackStatus.Confirmed)
+        {
+            throw new InvalidOperationException("Track already confirmed");
+        }
+
+        track.Status = TrackStatus.Confirmed;
+
+        await _trackRepository.UpdateAsync(track);
+    }
+
+    public async Task UpdateAsync(Guid userId, Guid trackId, TrackUpdateRequest request)
+    {
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
+
+        var track = await _trackRepository.GetByIdAsync(trackId)
+            ?? throw new KeyNotFoundException("Track not found");
+
+        bool isOwner = track.CreatedById == userId;
+        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) ||
+                           user.Roles.HasFlag(UserRole.SuperAdmin);
+
+        if (!isOwner && !isModerator)
+        {
+            throw new UnauthorizedAccessException("You cannot edit this track");
+        }
+
+        track.Name = request.Name;
+        track.Location = request.Location;
+        track.LayoutImageUrl = request.LayoutImageUrl;
+
+        await _trackRepository.UpdateAsync(track);
+    }
+
+    public async Task DeleteAsync(Guid userId, Guid trackId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
+
+        var track = await _trackRepository.GetByIdAsync(trackId)
+            ?? throw new KeyNotFoundException("Track not found");
+
+        bool isOwner = track.CreatedById == userId;
+        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) ||
+                           user.Roles.HasFlag(UserRole.SuperAdmin);
+
+        if (!isOwner && !isModerator)
+        {
+            throw new UnauthorizedAccessException("You cannot delete this track");
+        }
+
+        if (track.Tournaments.Any(t => t.Status != TournamentStatus.Finished))
+        {
+            throw new InvalidOperationException("Cannot delete track used in active tournaments");
+        }
+
+        await _trackRepository.DeleteAsync(track);
+    }
+
+    public async Task MakeOfficialAsync(Guid userId, Guid trackId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
+
+        var track = await _trackRepository.GetByIdAsync(trackId)
+            ?? throw new KeyNotFoundException("Track not found");
+
+        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) ||
+                           user.Roles.HasFlag(UserRole.SuperAdmin);
+
+        if (!isModerator)
+        {
+            throw new UnauthorizedAccessException("Only moderator can make track official");
+        }
+
+        if (track.Status != TrackStatus.Confirmed)
+        {
+            throw new InvalidOperationException("Track must be confirmed first");
+        }
+
+        track.Status = TrackStatus.Official;
+
+        await _trackRepository.UpdateAsync(track);
     }
 }

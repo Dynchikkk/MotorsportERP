@@ -1,10 +1,9 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using MotorsportErp.Application.Interfaces.Security;
 using MotorsportErp.Domain.Users;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace MotorsportErp.Infrastructure.Auth;
 
@@ -12,9 +11,9 @@ public class JwtProvider : IJwtProvider
 {
     private readonly JwtSettings _settings;
 
-    public JwtProvider(IOptions<JwtSettings> settings)
+    public JwtProvider(JwtSettings settings)
     {
-        _settings = settings.Value;
+        _settings = settings;
     }
 
     public string GenerateToken(User user)
@@ -22,13 +21,26 @@ public class JwtProvider : IJwtProvider
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Email, user.Email),
-            new(ClaimTypes.Role, user.Roles.ToString())
+            new(ClaimTypes.Email, user.Email)
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret));
+        foreach (UserRole role in Enum.GetValues(typeof(UserRole)))
+        {
+            if (role == UserRole.None)
+                continue;
 
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            if (user.Roles.HasFlag(role))
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
+            }
+        }
+
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(_settings.Secret));
+
+        var credentials = new SigningCredentials(
+            key,
+            SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
             issuer: _settings.Issuer,
