@@ -2,7 +2,7 @@
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Application.Interfaces.Services;
 using MotorsportErp.Application.Mappers;
-using MotorsportErp.Domain.Tournaments;
+using MotorsportErp.Domain.Cars;
 
 namespace MotorsportErp.Application.Services;
 
@@ -19,52 +19,62 @@ public class CarService : ICarService
         _userRepository = userRepository;
     }
 
-    public async Task<List<CarResponse>> GetUserCarsAsync(Guid userId)
-    {
-        _ = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
-        List<Domain.Cars.Car> cars = await _carRepository.GetByUserIdAsync(userId);
-        return CarMapper.ToResponseList(cars).ToList();
-    }
-
     public async Task<Guid> CreateAsync(Guid userId, CarCreateRequest request)
     {
-        Domain.Users.User user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        _ = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
 
-        Domain.Cars.Car car = CarMapper.ToEntity(request, user.Id);
+        var car = new Car
+        {
+            Id = Guid.NewGuid(),
+            Model = request.Model,
+            Brand = request.Brand,
+            Year = request.Year,
+            Description = request.Description,
+            CarClass = request.CarClass,
+            OwnerId = userId
+        };
+
         await _carRepository.AddAsync(car);
 
         return car.Id;
     }
 
+    public async Task<List<CarResponse>> GetUserCarsAsync(Guid userId)
+    {
+        var cars = await _carRepository.GetByUserIdAsync(userId);
+
+        return cars.Select(CarMapper.ToResponse).ToList();
+    }
+
     public async Task UpdateAsync(Guid userId, Guid carId, CarUpdateRequest request)
     {
-        Domain.Cars.Car car = await _carRepository.GetByIdAsync(carId) ?? throw new KeyNotFoundException("Car not found");
+        var car = await _carRepository.GetByIdAsync(carId)
+            ?? throw new KeyNotFoundException("Car not found");
+
         if (car.OwnerId != userId)
         {
-            throw new UnauthorizedAccessException("You are not the owner of this car");
+            throw new UnauthorizedAccessException("No permission");
         }
 
-        CarMapper.Update(car, request);
+        car.Model = request.Model;
+        car.Brand = request.Brand;
+        car.Year = request.Year;
+        car.Description = request.Description;
+        car.CarClass = request.CarClass;
+        car.OwnerId = userId;
 
         await _carRepository.UpdateAsync(car);
     }
 
     public async Task DeleteAsync(Guid userId, Guid carId)
     {
-        Domain.Cars.Car car = await _carRepository.GetByIdAsync(carId) ?? throw new KeyNotFoundException("Car not found");
+        var car = await _carRepository.GetByIdAsync(carId)
+            ?? throw new KeyNotFoundException("Car not found");
+
         if (car.OwnerId != userId)
         {
-            throw new UnauthorizedAccessException("You are not the owner of this car");
-        }
-
-        bool hasActiveApplications = car.Applications.Any(a =>
-            a.Tournament.Status is TournamentStatus.RegistrationOpen or
-            TournamentStatus.Confirmed or
-            TournamentStatus.Active);
-
-        if (hasActiveApplications)
-        {
-            throw new InvalidOperationException("Cannot delete car used in active tournaments");
+            throw new UnauthorizedAccessException("No permission");
         }
 
         await _carRepository.DeleteAsync(car);

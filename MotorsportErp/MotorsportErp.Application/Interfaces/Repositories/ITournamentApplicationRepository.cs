@@ -1,9 +1,9 @@
-﻿using MotorsportErp.Domain.Tournaments;
+﻿using MotorsportErp.Application.Interfaces.Repositories;
+using MotorsportErp.Domain.Tournaments;
 
-namespace MotorsportErp.Application.Interfaces.Repositories;
-
-public interface ITournamentApplicationRepository
+public interface ITournamentApplicationRepository : IBaseRepository<TournamentApplication>
 {
-    Task<TournamentApplication?> GetByIdAsync(Guid id);
-    Task UpdateAsync(TournamentApplication application);
+    Task<bool> ExistsAsync(Guid userId, Guid tournamentId);
+
+    Task<int> GetApprovedCountAsync(Guid tournamentId);
 }

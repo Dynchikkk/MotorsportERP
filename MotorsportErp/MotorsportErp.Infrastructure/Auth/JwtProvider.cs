@@ -1,9 +1,9 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using MotorsportErp.Application.Interfaces.Security;
 using MotorsportErp.Domain.Users;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace MotorsportErp.Infrastructure.Auth;
 
@@ -27,7 +27,9 @@ public class JwtProvider : IJwtProvider
         foreach (UserRole role in Enum.GetValues(typeof(UserRole)))
         {
             if (role == UserRole.None)
+            {
                 continue;
+            }
 
             if (user.Roles.HasFlag(role))
             {

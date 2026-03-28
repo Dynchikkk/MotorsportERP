@@ -4,5 +4,5 @@ namespace MotorsportErp.Application.Interfaces.Repositories;
 
 public interface ICarRepository : IBaseRepository<Car>
 {
-    Task<List<Car>> GetByUserIdAsync(Guid userId);
+    Task<List<Car>> GetByUserIdAsync(Guid ownerId);
 }

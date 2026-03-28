@@ -1,6 +1,6 @@
-﻿using MotorsportErp.Infrastructure.Auth;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using MotorsportErp.Infrastructure.Auth;
 using System.Text;
 
 namespace MotorsportErp.WebApi.Extensions;
@@ -13,7 +13,7 @@ public static class AuthExtensions
             .GetSection("JwtSettings")
             .Get<JwtSettings>();
 
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        _ = services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -31,7 +31,7 @@ public static class AuthExtensions
                 };
             });
 
-        services.AddAuthorization();
+        _ = services.AddAuthorization();
 
         return services;
     }

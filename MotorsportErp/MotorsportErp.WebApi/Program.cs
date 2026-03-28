@@ -3,7 +3,7 @@ using MotorsportErp.Application.Common.Settings;
 using MotorsportErp.Infrastructure.Auth;
 using MotorsportErp.Infrastructure.Persistence;
 using MotorsportErp.WebApi.Extensions;
-using MotorsportErp.WebApi.Middlewares;
+using MotorsportErp.WebApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +29,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy
+        _ = policy
             .AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
@@ -80,8 +80,8 @@ if (app.Environment.IsDevelopment())
         db.Database.Migrate();
     }
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    _ = app.UseSwagger();
+    _ = app.UseSwaggerUI();
 }
 
 app.UseMiddleware<ExceptionMiddleware>();

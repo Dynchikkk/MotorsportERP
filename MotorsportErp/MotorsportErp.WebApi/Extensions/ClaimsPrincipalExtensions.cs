@@ -8,10 +8,7 @@ public static class ClaimsPrincipalExtensions
     {
         var value = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        if (!Guid.TryParse(value, out var userId))
-            throw new UnauthorizedAccessException("Invalid user id");
-
-        return userId;
+        return !Guid.TryParse(value, out var userId) ? throw new UnauthorizedAccessException("Invalid user id") : userId;
     }
 
     public static string GetEmail(this ClaimsPrincipal user)

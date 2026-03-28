@@ -1,11 +1,8 @@
-﻿using Microsoft.Extensions.Options;
-using MotorsportErp.Application.Common.Settings;
-using MotorsportErp.Application.DTO.Tournaments;
+﻿using MotorsportErp.Application.DTO.Tournaments;
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Application.Interfaces.Services;
 using MotorsportErp.Application.Mappers;
 using MotorsportErp.Domain.Tournaments;
-using MotorsportErp.Domain.Tracks;
 using MotorsportErp.Domain.Users;
 
 namespace MotorsportErp.Application.Services;
@@ -13,230 +10,225 @@ namespace MotorsportErp.Application.Services;
 public class TournamentService : ITournamentService
 {
     private readonly ITournamentRepository _tournamentRepository;
-    private readonly ITournamentApplicationRepository _tournamentApplicationRepository;
     private readonly IUserRepository _userRepository;
-    private readonly ITrackRepository _trackRepository;
     private readonly ICarRepository _carRepository;
-    private readonly TournamentSettings _settings;
+    private readonly ITournamentApplicationRepository _applicationRepository;
 
     public TournamentService(
         ITournamentRepository tournamentRepository,
         IUserRepository userRepository,
-        ITrackRepository trackRepository,
         ICarRepository carRepository,
-        ITournamentApplicationRepository tournamentApplicationRepository,
-        IOptions<TournamentSettings> options)
+        ITournamentApplicationRepository applicationRepository)
     {
         _tournamentRepository = tournamentRepository;
         _userRepository = userRepository;
-        _trackRepository = trackRepository;
         _carRepository = carRepository;
-        _tournamentApplicationRepository = tournamentApplicationRepository;
-        _settings = options.Value;
-    }
-
-    public async Task<List<TournamentResponse>> GetAllAsync()
-    {
-        List<Tournament> tournaments = await _tournamentRepository.GetAllAsync();
-        return TournamentMapper.ToResponseList(tournaments).ToList();
-    }
-
-    public async Task<TournamentDetailsResponse> GetByIdAsync(Guid id)
-    {
-        Tournament tournament = await _tournamentRepository.GetByIdAsync(id) ?? throw new KeyNotFoundException("Tournament not found");
-        return TournamentMapper.ToDetails(tournament);
+        _applicationRepository = applicationRepository;
     }
 
     public async Task<Guid> CreateAsync(Guid userId, TournamentCreateRequest request)
     {
-        User user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
-        if (user.RaceCount < _settings.MinRacesToBecomeOrganizer)
-        {
-            throw new InvalidOperationException("Not enough races to create tournament");
-        }
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
 
-        Track track = await _trackRepository.GetByIdAsync(request.TrackId) ?? throw new KeyNotFoundException("Track not found");
-        if (track.Status is not TrackStatus.Confirmed and not TrackStatus.Official)
-        {
-            throw new InvalidOperationException("Track is not available for tournaments");
-        }
+        user.Roles |= UserRole.Organizer;
 
-        Tournament tournament = TournamentMapper.ToEntity(request, userId);
+        var tournament = new Tournament
+        {
+            Id = Guid.NewGuid(),
+            Name = request.Name,
+            Description = request.Description,
+            TrackId = request.TrackId,
+            StartDate = request.StartDate,
+            RequiredParticipants = request.RequiredParticipants,
+            AllowedCarClass = request.AllowedCarClass,
+            RequiredRaceCount = request.RequiredRaceCount,
+            Status = TournamentStatus.RegistrationOpen,
+            CreatorId = userId,
+            Organizers =
+            [
+                new TournamentOrganizer
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId
+                }
+            ]
+        };
+
         await _tournamentRepository.AddAsync(tournament);
-
-        if (!user.Roles.HasFlag(UserRole.Organizer))
-        {
-            user.Roles |= UserRole.Organizer;
-            await _userRepository.UpdateAsync(user);
-        }
+        await _userRepository.UpdateAsync(user);
 
         return tournament.Id;
     }
 
-    public async Task UpdateAsync(Guid tournamentId, TournamentUpdateRequest request)
+    public async Task UpdateAsync(Guid userId, Guid tournamentId, TournamentUpdateRequest request)
     {
-        Tournament tournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new KeyNotFoundException("Tournament not found");
-        if (tournament.Status is TournamentStatus.Finished or TournamentStatus.Cancelled)
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
+
+        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
+            ?? throw new KeyNotFoundException("Tournament not found");
+
+        if (!HasAccess(tournament, user))
         {
-            throw new InvalidOperationException("Cannot update completed tournament");
+            throw new UnauthorizedAccessException("No permission");
         }
 
-        TournamentMapper.Update(tournament, request);
+        if (tournament.Status != TournamentStatus.RegistrationOpen)
+        {
+            throw new InvalidOperationException("Cannot update after registration");
+        }
+
+        tournament.Description = request.Description;
+        tournament.StartDate = request.StartDate;
+        tournament.RequiredParticipants = request.RequiredParticipants;
 
         await _tournamentRepository.UpdateAsync(tournament);
     }
 
-    public async Task ApplyAsync(Guid userId, TournamentApplyRequest request)
+    public async Task CancelAsync(Guid userId, Guid tournamentId)
     {
-        User user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
-        Tournament tournament = await _tournamentRepository.GetByIdAsync(request.TournamentId) ?? throw new KeyNotFoundException("Tournament not found");
-        Domain.Cars.Car car = await _carRepository.GetByIdAsync(request.CarId) ?? throw new KeyNotFoundException("Car not found");
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
+
+        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
+            ?? throw new KeyNotFoundException("Tournament not found");
+
+        if (!HasAccess(tournament, user))
+        {
+            throw new UnauthorizedAccessException("No permission");
+        }
+
+        if (tournament.Status == TournamentStatus.Finished)
+        {
+            throw new InvalidOperationException("Cannot cancel finished tournament");
+        }
+
+        tournament.Status = TournamentStatus.Cancelled;
+
+        await _tournamentRepository.UpdateAsync(tournament);
+    }
+
+    public async Task ApplyAsync(Guid userId, Guid tournamentId, Guid carId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
+
+        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
+            ?? throw new KeyNotFoundException("Tournament not found");
+
+        var car = await _carRepository.GetByIdAsync(carId)
+            ?? throw new KeyNotFoundException("Car not found");
 
         if (tournament.Status != TournamentStatus.RegistrationOpen)
         {
-            throw new InvalidOperationException("Tournament registration is closed");
+            throw new InvalidOperationException("Registration closed");
         }
 
         if (car.OwnerId != userId)
         {
-            throw new UnauthorizedAccessException("Car does not belong to user");
+            throw new UnauthorizedAccessException("Not your car");
         }
 
         if (car.CarClass != tournament.AllowedCarClass)
         {
-            throw new InvalidOperationException("Car class does not match tournament requirements");
+            throw new InvalidOperationException("Car class mismatch");
         }
 
         if (user.RaceCount < tournament.RequiredRaceCount)
         {
-            throw new InvalidOperationException("Not enough races to participate");
+            throw new InvalidOperationException("Not enough races");
         }
 
-        bool alreadyApplied = await _tournamentRepository.HasUserAppliedAsync(tournament.Id, userId);
-        if (alreadyApplied)
+        bool exists = await _applicationRepository.ExistsAsync(userId, tournamentId);
+        if (exists)
         {
-            throw new InvalidOperationException("User already applied to this tournament");
+            throw new InvalidOperationException("Already applied");
         }
 
-        TournamentApplication application = new()
+        var application = new TournamentApplication
         {
             Id = Guid.NewGuid(),
             UserId = userId,
-            TournamentId = tournament.Id,
-            CarId = car.Id,
+            TournamentId = tournamentId,
+            CarId = carId,
             Status = TournamentApplicationStatus.Pending
         };
 
-        await _tournamentRepository.AddApplicationAsync(application);
+        await _applicationRepository.AddAsync(application);
     }
 
-    public async Task ApproveApplicationAsync(Guid userId, Guid applicationId)
+    public async Task ApproveAsync(Guid userId, Guid applicationId)
     {
-        TournamentApplication application = await _tournamentRepository.GetApplicationByIdAsync(applicationId) ?? throw new KeyNotFoundException("Application not found");
-        Tournament tournament = application.Tournament;
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
 
-        if (!IsUserOrganizer(tournament, userId))
-        {
-            throw new UnauthorizedAccessException("Only organizer can approve applications");
-        }
+        var application = await _applicationRepository.GetByIdAsync(applicationId)
+            ?? throw new KeyNotFoundException("Application not found");
 
-        if (tournament.Status != TournamentStatus.RegistrationOpen)
-        {
-            throw new InvalidOperationException("Tournament is not accepting applications");
-        }
+        var tournament = await _tournamentRepository.GetByIdAsync(application.TournamentId)
+            ?? throw new KeyNotFoundException("Tournament not found");
 
-        if (application.Status != TournamentApplicationStatus.Pending)
+        if (!HasAccess(tournament, user))
         {
-            throw new InvalidOperationException("Application is not pending");
+            throw new UnauthorizedAccessException("No permission");
         }
 
         application.Status = TournamentApplicationStatus.Approved;
 
-        await _tournamentApplicationRepository.UpdateAsync(application);
-
-        int approvedCount = tournament.Applications.Count(a => a.Status == TournamentApplicationStatus.Approved);
+        var approvedCount = await _applicationRepository.GetApprovedCountAsync(tournament.Id);
 
         if (approvedCount >= tournament.RequiredParticipants)
         {
             tournament.Status = TournamentStatus.Confirmed;
             await _tournamentRepository.UpdateAsync(tournament);
         }
+
+        await _applicationRepository.UpdateAsync(application);
     }
 
-    public async Task RejectApplicationAsync(Guid userId, Guid applicationId)
+    public async Task RejectAsync(Guid userId, Guid applicationId)
     {
-        TournamentApplication application = await _tournamentRepository.GetApplicationByIdAsync(applicationId) ?? throw new KeyNotFoundException("Application not found");
-        Tournament tournament = application.Tournament;
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
 
-        if (!IsUserOrganizer(tournament, userId))
-        {
-            throw new UnauthorizedAccessException("Only organizer can reject applications");
-        }
+        var application = await _applicationRepository.GetByIdAsync(applicationId)
+            ?? throw new KeyNotFoundException("Application not found");
 
-        if (application.Status != TournamentApplicationStatus.Pending)
+        var tournament = await _tournamentRepository.GetByIdAsync(application.TournamentId)
+            ?? throw new KeyNotFoundException("Tournament not found");
+
+        if (!HasAccess(tournament, user))
         {
-            throw new InvalidOperationException("Application is not pending");
+            throw new UnauthorizedAccessException("No permission");
         }
 
         application.Status = TournamentApplicationStatus.Rejected;
 
-        await _tournamentApplicationRepository.UpdateAsync(application);
+        await _applicationRepository.UpdateAsync(application);
     }
 
-    public async Task AddResultAsync(Guid userId, Guid tournamentId, TournamentResultCreateRequest request)
+    public async Task StartAsync(Guid userId, Guid tournamentId)
     {
-        Tournament tournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new KeyNotFoundException("Tournament not found");
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
 
-        if (!IsUserOrganizer(tournament, userId))
+        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
+            ?? throw new KeyNotFoundException("Tournament not found");
+
+        if (!HasAccess(tournament, user))
         {
-            throw new UnauthorizedAccessException("Only organizer can add results");
-        }
-
-        if (tournament.Status is not TournamentStatus.Active and
-            not TournamentStatus.Finished)
-        {
-            throw new InvalidOperationException("Tournament is not active");
-        }
-
-        bool participated = tournament.Applications.Any(a =>
-            a.UserId == request.UserId &&
-            a.Status == TournamentApplicationStatus.Approved);
-
-        if (!participated)
-        {
-            throw new InvalidOperationException("User did not participate");
-        }
-
-        bool alreadyExists = tournament.Results.Any(r => r.UserId == request.UserId);
-        if (alreadyExists)
-        {
-            throw new InvalidOperationException("Result already exists");
-        }
-
-        TournamentResult result = new()
-        {
-            Id = Guid.NewGuid(),
-            TournamentId = tournamentId,
-            UserId = request.UserId,
-            Position = request.Position,
-            BestLapTime = request.BestLapTime
-        };
-
-        await _tournamentRepository.AddResultAsync(result);
-    }
-
-    public async Task StartTournamentAsync(Guid userId, Guid tournamentId)
-    {
-        Tournament tournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new KeyNotFoundException("Tournament not found");
-
-        if (!IsUserOrganizer(tournament, userId))
-        {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("No permission");
         }
 
         if (tournament.Status != TournamentStatus.Confirmed)
         {
-            throw new InvalidOperationException("Tournament must be confirmed");
+            throw new InvalidOperationException("Tournament not confirmed");
+        }
+
+        if (DateTime.UtcNow < tournament.StartDate)
+        {
+            throw new InvalidOperationException("Too early to start");
         }
 
         tournament.Status = TournamentStatus.Active;
@@ -244,18 +236,27 @@ public class TournamentService : ITournamentService
         await _tournamentRepository.UpdateAsync(tournament);
     }
 
-    public async Task FinishTournamentAsync(Guid userId, Guid tournamentId)
+    public async Task FinishAsync(Guid userId, Guid tournamentId)
     {
-        Tournament tournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new KeyNotFoundException("Tournament not found");
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
 
-        if (!IsUserOrganizer(tournament, userId))
+        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
+            ?? throw new KeyNotFoundException("Tournament not found");
+
+        if (!HasAccess(tournament, user))
         {
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedAccessException("No permission");
         }
 
         if (tournament.Status != TournamentStatus.Active)
         {
-            throw new InvalidOperationException("Tournament is not active");
+            throw new InvalidOperationException("Tournament not active");
+        }
+
+        if (!tournament.Results.Any())
+        {
+            throw new InvalidOperationException("No results");
         }
 
         tournament.Status = TournamentStatus.Finished;
@@ -263,9 +264,68 @@ public class TournamentService : ITournamentService
         await _tournamentRepository.UpdateAsync(tournament);
     }
 
-    private static bool IsUserOrganizer(Tournament tournament, Guid userId)
+    public async Task AddResultAsync(Guid userId, Guid tournamentId, TournamentResultRequest request)
     {
-        return tournament.CreatorId == userId ||
-               tournament.Organizers.Any(o => o.UserId == userId);
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new KeyNotFoundException("User not found");
+
+        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
+            ?? throw new KeyNotFoundException("Tournament not found");
+
+        if (!HasAccess(tournament, user))
+        {
+            throw new UnauthorizedAccessException("No permission");
+        }
+
+        if (tournament.Status != TournamentStatus.Active)
+        {
+            throw new InvalidOperationException("Tournament not active");
+        }
+
+        if (tournament.Results.Any(r => r.UserId == request.UserId))
+        {
+            throw new InvalidOperationException("Result already exists");
+        }
+
+        if (request.Position <= 0)
+        {
+            throw new ArgumentException("Invalid position");
+        }
+
+        if (request.Points < 0)
+        {
+            throw new ArgumentException("Invalid points");
+        }
+
+        tournament.Results.Add(new TournamentResult
+        {
+            Id = Guid.NewGuid(),
+            UserId = request.UserId,
+            Position = request.Position
+        });
+
+        await _tournamentRepository.UpdateAsync(tournament);
+    }
+
+    public async Task<List<TournamentResponse>> GetAllAsync()
+    {
+        var tournaments = await _tournamentRepository.GetAllAsync();
+        return tournaments.Select(TournamentMapper.ToResponse).ToList();
+    }
+
+    public async Task<TournamentDetailsResponse> GetByIdAsync(Guid id)
+    {
+        var tournament = await _tournamentRepository.GetByIdAsync(id)
+            ?? throw new KeyNotFoundException("Tournament not found");
+
+        return TournamentMapper.ToDetails(tournament);
+    }
+
+    private static bool HasAccess(Tournament tournament, User user)
+    {
+        return tournament.CreatorId == user.Id ||
+               tournament.Organizers.Any(o => o.UserId == user.Id) ||
+               user.Roles.HasFlag(UserRole.Moderator) ||
+               user.Roles.HasFlag(UserRole.SuperAdmin);
     }
 }

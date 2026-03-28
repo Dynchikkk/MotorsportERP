@@ -6,7 +6,7 @@ namespace MotorsportErp.Domain.Tournaments;
 public class TournamentOrganizer : GuidEntity
 {
     public Guid TournamentId { get; set; }
-    public required Tournament Tournament { get; set; }
+    public Tournament Tournament { get; set; } = null!;
 
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
