@@ -5,6 +5,8 @@ namespace MotorsportErp.Domain.Tracks;
 
 public class TrackVote : GuidEntity
 {
+    public bool IsPositive { get; set; }
+
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
 

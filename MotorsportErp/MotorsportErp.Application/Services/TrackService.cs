@@ -42,8 +42,7 @@ public class TrackService : ITrackService
     {
         Domain.Users.User user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
 
-        bool isPrivileged = user.Roles.HasFlag(UserRole.Moderator) ||
-                    user.Roles.HasFlag(UserRole.SuperAdmin);
+        bool isPrivileged = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
 
         if (!isPrivileged && user.RaceCount < _settings.MinRacesToCreate)
         {
@@ -52,38 +51,43 @@ public class TrackService : ITrackService
 
         Track track = TrackMapper.ToEntity(request, userId);
         track.ConfirmationThreshold = _settings.DefaultConfirmationThreshold;
+
+        if (isPrivileged && request.Status.HasValue)
+        {
+            track.Status = request.Status.Value;
+        }
+
         await _trackRepository.AddAsync(track);
 
         return track.Id;
     }
 
-    public async Task VoteAsync(Guid userId, TrackVoteRequest request)
+    public async Task VoteAsync(Guid userId, Guid trackId, bool isPositive)
     {
-        Domain.Users.User user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
-        Track track = await _trackRepository.GetByIdAsync(request.TrackId) ?? throw new KeyNotFoundException("Track not found");
+        var track = await _trackRepository.GetByIdAsync(trackId) ?? throw new KeyNotFoundException("Track not found");
 
         if (track.Status != TrackStatus.Unofficial)
+            throw new InvalidOperationException("Can only vote for unofficial tracks");
+
+        var existingVote = track.Votes.FirstOrDefault(v => v.UserId == userId);
+
+        if (existingVote != null)
         {
-            throw new InvalidOperationException("Voting is closed for this track");
+            existingVote.IsPositive = isPositive;
+        }
+        else
+        {
+            track.Votes.Add(new TrackVote
+            {
+                Id = Guid.NewGuid(),
+                TrackId = trackId,
+                UserId = userId,
+                IsPositive = isPositive
+            });
         }
 
-        bool alreadyVoted = await _trackRepository.HasUserVotedAsync(track.Id, user.Id);
-        if (alreadyVoted)
-        {
-            throw new InvalidOperationException("User already voted for this track");
-        }
-
-        TrackVote vote = new()
-        {
-            Id = Guid.NewGuid(),
-            TrackId = track.Id,
-            UserId = userId
-        };
-
-        await _trackRepository.AddVoteAsync(vote);
-
-        int newVoteCount = track.VoteCount + 1;
-        if (newVoteCount >= track.ConfirmationThreshold)
+        var positiveVotesCount = track.Votes.Count(v => v.IsPositive);
+        if (positiveVotesCount >= track.ConfirmationThreshold)
         {
             track.Status = TrackStatus.Confirmed;
         }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Domain.Cars;
+using MotorsportErp.Domain.Tournaments;
 using MotorsportErp.Infrastructure.Persistence;
 
 namespace MotorsportErp.Infrastructure.Repositories;
@@ -45,5 +46,13 @@ public class CarRepository : ICarRepository
     {
         _ = _context.Cars.Remove(entity);
         _ = await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> HasActiveApplicationsAsync(Guid carId)
+    {
+        return await _context.TournamentApplications
+            .AnyAsync(a => a.CarId == carId &&
+                           a.Tournament.Status != TournamentStatus.Finished &&
+                           a.Tournament.Status != TournamentStatus.Cancelled);
     }
 }

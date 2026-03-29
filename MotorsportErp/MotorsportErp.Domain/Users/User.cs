@@ -12,8 +12,13 @@ public class User : GuidEntity
     public required string Nickname { get; set; }
     public required string Email { get; set; }
     public required string PasswordHash { get; set; }
+    public string? Bio { get; set; }
 
     public int RaceCount { get; set; }
+    public bool IsBlocked { get; set; } = false;
+
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpiryTime { get; set; }
 
     // Navigation
 

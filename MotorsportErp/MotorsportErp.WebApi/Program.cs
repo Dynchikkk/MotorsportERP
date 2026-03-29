@@ -3,7 +3,7 @@ using MotorsportErp.Application.Common.Settings;
 using MotorsportErp.Infrastructure.Auth;
 using MotorsportErp.Infrastructure.Persistence;
 using MotorsportErp.WebApi.Extensions;
-using MotorsportErp.WebApi.Middleware;
+using MotorsportErp.WebApi.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 

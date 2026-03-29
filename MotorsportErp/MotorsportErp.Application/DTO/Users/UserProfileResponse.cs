@@ -8,6 +8,7 @@ public class UserProfileResponse
 
     public UserRole Roles { get; set; }
     public string Nickname { get; set; } = default!;
+    public string? Bio { get; set; }
 
     public int RaceCount { get; set; }
     public int CarsCount { get; set; }

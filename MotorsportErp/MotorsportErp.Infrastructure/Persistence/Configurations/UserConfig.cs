@@ -9,5 +9,8 @@ public class UserConfig : IEntityTypeConfiguration<User>
     public void Configure(EntityTypeBuilder<User> builder)
     {
         _ = builder.HasIndex(u => u.Email).IsUnique();
+
+        _ = builder.Property(u => u.Bio).HasMaxLength(1000).IsRequired(false);
+        _ = builder.Property(u => u.IsBlocked).HasDefaultValue(false);
     }
 }

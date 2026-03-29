@@ -69,13 +69,14 @@ public class CarService : ICarService
 
     public async Task DeleteAsync(Guid userId, Guid carId)
     {
-        var car = await _carRepository.GetByIdAsync(carId)
-            ?? throw new KeyNotFoundException("Car not found");
+        var car = await _carRepository.GetByIdAsync(carId) ?? throw new KeyNotFoundException("Car not found");
 
         if (car.OwnerId != userId)
-        {
             throw new UnauthorizedAccessException("No permission");
-        }
+
+        bool hasActive = await _carRepository.HasActiveApplicationsAsync(carId);
+        if (hasActive)
+            throw new InvalidOperationException("Cannot delete car used in active tournaments");
 
         await _carRepository.DeleteAsync(car);
     }

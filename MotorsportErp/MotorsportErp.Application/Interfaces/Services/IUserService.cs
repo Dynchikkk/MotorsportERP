@@ -12,4 +12,6 @@ public interface IUserService
     Task AssignRoleAsync(Guid adminId, Guid targetUserId, UserRole role);
 
     Task UpdateProfileAsync(Guid userId, UserUpdateRequest request);
+
+    Task BlockUserAsync(Guid adminId, Guid targetUserId, bool block);
 }

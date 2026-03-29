@@ -61,16 +61,26 @@ public class UserService : IUserService
 
     public async Task UpdateProfileAsync(Guid userId, UserUpdateRequest request)
     {
-        var user = await _userRepository.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found");
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
 
         if (string.IsNullOrWhiteSpace(request.Nickname))
-        {
             throw new ArgumentException("Nickname cannot be empty");
-        }
 
         user.Nickname = request.Nickname;
+        user.Bio = request.Bio;
 
         await _userRepository.UpdateAsync(user);
+    }
+
+    public async Task BlockUserAsync(Guid adminId, Guid targetUserId, bool block)
+    {
+        var admin = await _userRepository.GetByIdAsync(adminId) ?? throw new KeyNotFoundException("Admin not found");
+        if (!admin.Roles.HasFlag(UserRole.Moderator) && !admin.Roles.HasFlag(UserRole.SuperAdmin))
+            throw new UnauthorizedAccessException("No permission to block users");
+
+        var targetUser = await _userRepository.GetByIdAsync(targetUserId) ?? throw new KeyNotFoundException("User not found");
+
+        targetUser.IsBlocked = block;
+        await _userRepository.UpdateAsync(targetUser);
     }
 }
