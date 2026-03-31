@@ -1,4 +1,4 @@
-﻿namespace MotorsportErp.Application.DTO.Users;
+﻿namespace MotorsportErp.Application.DTO.Auth;
 
 public class UserLoginRequest
 {

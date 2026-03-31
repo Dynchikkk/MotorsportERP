@@ -1,6 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using MotorsportErp.Application.DTO.Auth;
-using MotorsportErp.Application.DTO.Users;
+using MotorsportErp.Application.DTO.Users; // Добавлено для UserResponse
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Application.Interfaces.Security;
 using MotorsportErp.Application.Interfaces.Services;
@@ -26,7 +26,7 @@ public class AuthService : IAuthService
         _jwtProvider = jwtProvider;
     }
 
-    public async Task<AuthResponse> RegisterAsync(UserRegisterRequest request)
+    public async Task<UserResponse> RegisterAsync(UserRegisterRequest request)
     {
         bool exists = await _userRepository.ExistsByEmailAsync(request.Email);
         if (exists)
@@ -36,15 +36,16 @@ public class AuthService : IAuthService
 
         string passwordHash = _passwordHasher.Hash(request.Password);
         User user = UserMapper.ToEntity(request, passwordHash);
+
         await _userRepository.AddAsync(user);
 
-        string token = _jwtProvider.GenerateToken(user);
-        return AuthMapper.ToResponse(token);
+        return UserMapper.ToResponse(user);
     }
 
     public async Task<AuthResponse> LoginAsync(UserLoginRequest request)
     {
-        User user = await _userRepository.GetByEmailAsync(request.Email) ?? throw new UnauthorizedAccessException("Invalid email or password");
+        User user = await _userRepository.GetByEmailAsync(request.Email)
+            ?? throw new UnauthorizedAccessException("Invalid email or password");
 
         bool isValid = _passwordHasher.Verify(request.Password, user.PasswordHash);
         if (!isValid)
@@ -64,22 +65,20 @@ public class AuthService : IAuthService
         user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
         await _userRepository.UpdateAsync(user);
 
-        return new AuthResponse
-        {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken
-        };
+        return AuthMapper.ToResponse(accessToken, refreshToken);
     }
 
     public async Task<AuthResponse> RefreshTokenAsync(string accessToken, string refreshToken)
     {
-        var principal = _jwtProvider.GetPrincipalFromExpiredToken(accessToken) ?? throw new SecurityTokenException("Invalid access/refresh token");
+        var principal = _jwtProvider.GetPrincipalFromExpiredToken(accessToken)
+            ?? throw new SecurityTokenException("Invalid access/refresh token");
 
         var userIdStr = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(userIdStr, out var userId))
             throw new SecurityTokenException("Invalid token claims");
 
-        var user = await _userRepository.GetByIdAsync(userId) ?? throw new SecurityTokenException("Invalid request");
+        var user = await _userRepository.GetByIdAsync(userId)
+            ?? throw new SecurityTokenException("Invalid request");
 
         if (user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
             throw new SecurityTokenException("Invalid or expired refresh token");
@@ -90,10 +89,6 @@ public class AuthService : IAuthService
         user.RefreshToken = newRefreshToken;
         await _userRepository.UpdateAsync(user);
 
-        return new AuthResponse
-        {
-            AccessToken = newAccessToken,
-            RefreshToken = newRefreshToken
-        };
+        return AuthMapper.ToResponse(newAccessToken, newRefreshToken);
     }
 }

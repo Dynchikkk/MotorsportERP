@@ -2,15 +2,12 @@
 
 namespace MotorsportErp.Application.DTO.Users;
 
-public class UserProfileResponse
+public class UserProfileResponse : UserResponse
 {
-    public Guid Id { get; set; }
-
+    public required string Email { get; set; }
     public UserRole Roles { get; set; }
-    public string Nickname { get; set; } = default!;
-    public string? Bio { get; set; }
+    public bool IsBlocked { get; set; }
 
-    public int RaceCount { get; set; }
     public int CarsCount { get; set; }
     public int TournamentsCount { get; set; }
 }

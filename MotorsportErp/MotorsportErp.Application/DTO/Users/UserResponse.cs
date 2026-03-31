@@ -5,9 +5,7 @@ namespace MotorsportErp.Application.DTO.Users;
 public class UserResponse
 {
     public Guid Id { get; set; }
-
-    public UserRole Roles { get; set; }
-    public string Nickname { get; set; } = default!;
-
+    public required string Nickname { get; set; }
+    public string? Bio { get; set; }
     public int RaceCount { get; set; }
 }

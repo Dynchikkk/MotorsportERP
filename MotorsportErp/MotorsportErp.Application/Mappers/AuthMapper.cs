@@ -4,11 +4,16 @@ namespace MotorsportErp.Application.Mappers;
 
 public static class AuthMapper
 {
-    public static AuthResponse ToResponse(string token)
+    /// <summary>
+    /// Maps token strings to the AuthResponse DTO.
+    /// Used for Login and Refresh operations.
+    /// </summary>
+    public static AuthResponse ToResponse(string accessToken, string refreshToken)
     {
         return new AuthResponse
         {
-            AccessToken = token
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
         };
     }
 }

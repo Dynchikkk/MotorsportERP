@@ -2,6 +2,6 @@
 
 public class UserUpdateRequest
 {
-    public string Nickname { get; set; } = default!;
+    public required string Nickname { get; set; }
     public string? Bio { get; set; }
 }
