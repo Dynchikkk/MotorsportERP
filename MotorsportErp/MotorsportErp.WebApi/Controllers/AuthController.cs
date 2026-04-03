@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MotorsportErp.Application.DTO.Auth;
+using MotorsportErp.Application.DTO.Users;
 using MotorsportErp.Application.Interfaces.Services;
 using System.Net.Mime;
 
@@ -23,9 +24,9 @@ public class AuthController : ControllerBase
     /// </summary>
     [HttpPost("register")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<AuthResponse>> Register([FromBody] UserRegisterRequest request)
+    public async Task<ActionResult<UserResponse>> Register([FromBody] UserRegisterRequest request)
     {
         var response = await _authService.RegisterAsync(request);
 

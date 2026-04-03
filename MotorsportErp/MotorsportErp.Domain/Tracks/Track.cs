@@ -13,7 +13,7 @@ public class Track : GuidEntity
     public string? LayoutImageUrl { get; set; }
 
     public int ConfirmationThreshold { get; set; } = 10;
-    public int VoteCount => Votes.Count;
+    public int VoteCount => Votes.Count(v => v.IsPositive);
 
     // Navigation
 

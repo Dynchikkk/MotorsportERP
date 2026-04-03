@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using MotorsportErp.Application.Common.Settings;
+using MotorsportErp.Application.DTO.Common;
 using MotorsportErp.Application.DTO.Tournaments;
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Application.Interfaces.Services;
@@ -42,7 +43,9 @@ public class TournamentService : ITournamentService
         if (!isPrivileged)
         {
             if (user.RaceCount < _settings.MinRacesToBecomeOrganizer)
+            {
                 throw new UnauthorizedAccessException($"You need at least {_settings.MinRacesToBecomeOrganizer} races to create a tournament.");
+            }
 
             user.Roles |= UserRole.Organizer;
         }
@@ -256,13 +259,19 @@ public class TournamentService : ITournamentService
         var tournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new KeyNotFoundException("Tournament not found");
 
         if (!HasAccess(tournament, user))
+        {
             throw new UnauthorizedAccessException("No permission");
+        }
 
         if (tournament.Status != TournamentStatus.Active)
+        {
             throw new InvalidOperationException("Tournament not active");
+        }
 
         if (!tournament.Results.Any())
+        {
             throw new InvalidOperationException("No results to finish the tournament");
+        }
 
         tournament.Status = TournamentStatus.Finished;
         await _tournamentRepository.UpdateAsync(tournament);
@@ -321,10 +330,17 @@ public class TournamentService : ITournamentService
         await _tournamentRepository.UpdateAsync(tournament);
     }
 
-    public async Task<List<TournamentResponse>> GetAllAsync()
+    public async Task<PagedResponse<TournamentResponse>> GetAllAsync(int page = 0, int pageSize = 20)
     {
-        var tournaments = await _tournamentRepository.GetAllAsync();
-        return tournaments.Select(TournamentMapper.ToResponse).ToList();
+        var (tournaments, totalCount) = await _tournamentRepository.GetPagedAsync(null, page, pageSize);
+
+        return new PagedResponse<TournamentResponse>
+        {
+            Items = tournaments.Select(TournamentMapper.ToResponse).ToList(),
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
     }
 
     public async Task<TournamentDetailsResponse> GetByIdAsync(Guid id)
@@ -343,7 +359,9 @@ public class TournamentService : ITournamentService
         bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
 
         if (!isModerator)
+        {
             throw new UnauthorizedAccessException("Only moderators can delete tournaments");
+        }
 
         await _tournamentRepository.DeleteAsync(tournament);
     }
@@ -354,12 +372,16 @@ public class TournamentService : ITournamentService
         var tournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new KeyNotFoundException("Tournament not found");
 
         if (!HasAccess(tournament, user))
+        {
             throw new UnauthorizedAccessException("No permission");
+        }
 
         var newOrganizer = await _userRepository.GetByIdAsync(newOrganizerId) ?? throw new KeyNotFoundException("New organizer not found");
 
         if (tournament.Organizers.Any(o => o.UserId == newOrganizerId))
+        {
             throw new InvalidOperationException("User is already an organizer");
+        }
 
         tournament.Organizers.Add(new TournamentOrganizer
         {

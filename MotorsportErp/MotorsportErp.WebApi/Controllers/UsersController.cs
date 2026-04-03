@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MotorsportErp.Application.DTO.Common;
 using MotorsportErp.Application.DTO.Users;
 using MotorsportErp.Application.Interfaces.Services;
 using MotorsportErp.Domain.Users;
@@ -10,7 +11,7 @@ namespace MotorsportErp.WebApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize] // All endpoints require authentication by default
+[Authorize]
 [Produces(MediaTypeNames.Application.Json)]
 public class UsersController : ControllerBase
 {
@@ -35,6 +36,18 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
+    /// Retrieves short info about the current user.
+    /// </summary>
+    [HttpGet("me")]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<UserResponse>> GetMe()
+    {
+        var userId = User.GetUserId();
+        var user = await _userService.GetByIdAsync(userId);
+        return Ok(user);
+    }
+
+    /// <summary>
     /// Retrieves the detailed profile of the currently authenticated user.
     /// </summary>
     [HttpGet("profile")]
@@ -45,6 +58,35 @@ public class UsersController : ControllerBase
         var userId = User.GetUserId();
         var profile = await _userService.GetProfileAsync(userId);
         return Ok(profile);
+    }
+
+    /// <summary>
+    /// Retrieves all users base info
+    /// </summary>
+    [HttpGet]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(PagedResponse<UserResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResponse<UserResponse>>> GetAll(
+        [FromQuery] string? search,
+        [FromQuery] int page = 0,
+        [FromQuery] int pageSize = 20)
+    {
+        var result = await _userService.GetAllAsync(search, page, pageSize);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Retrieves all users admin info
+    /// </summary>
+    [HttpGet("admin")]
+    [Authorize(Policy = "RequireModerator")]
+    [ProducesResponseType(typeof(PagedResponse<UserAdminResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResponse<UserAdminResponse>>> GetAllAdmin(
+    [FromQuery] int page = 0,
+    [FromQuery] int pageSize = 20)
+    {
+        var result = await _userService.GetAllAdminAsync(page, pageSize);
+        return Ok(result);
     }
 
     /// <summary>
@@ -65,7 +107,7 @@ public class UsersController : ControllerBase
     /// Assigns a specific role to a user. Restricted to SuperAdmin.
     /// </summary>
     [HttpPost("{id}/assign-role")]
-    [Authorize(Roles = nameof(UserRole.SuperAdmin))]
+    [Authorize(Policy = "RequireSuperAdmin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -80,7 +122,7 @@ public class UsersController : ControllerBase
     /// Blocks or unblocks a user. Restricted to Moderators and SuperAdmins.
     /// </summary>
     [HttpPost("{id}/block")]
-    [Authorize(Roles = $"{nameof(UserRole.Moderator)},{nameof(UserRole.SuperAdmin)}")]
+    [Authorize(Policy = "RequireModerator")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> SetBlockStatus(Guid id, [FromQuery] bool isBlocked)

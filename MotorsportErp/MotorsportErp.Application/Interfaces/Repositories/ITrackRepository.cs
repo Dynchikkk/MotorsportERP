@@ -2,10 +2,8 @@
 
 namespace MotorsportErp.Application.Interfaces.Repositories;
 
-public interface ITrackRepository : IBaseRepository<Track>
+public interface ITrackRepository : IBaseRepository<Track>, IPagedRepository<Track>
 {
-    Task<List<Track>> GetAllAsync();
-
     Task<bool> HasUserVotedAsync(Guid trackId, Guid userId);
 
     Task AddVoteAsync(TrackVote vote);

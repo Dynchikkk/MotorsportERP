@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using MotorsportErp.Domain.Users;
 using MotorsportErp.Infrastructure.Auth;
 using System.Text;
 
@@ -31,7 +32,18 @@ public static class AuthExtensions
                 };
             });
 
-        _ = services.AddAuthorization();
+        _ = services.AddAuthorizationBuilder()
+            .AddPolicy("RequireOrganizer", policy =>
+                policy.RequireRole(
+                    nameof(UserRole.Organizer),
+                    nameof(UserRole.Moderator),
+                    nameof(UserRole.SuperAdmin)))
+            .AddPolicy("RequireModerator", policy =>
+                policy.RequireRole(
+                    nameof(UserRole.Moderator),
+                    nameof(UserRole.SuperAdmin)))
+            .AddPolicy("RequireSuperAdmin", policy =>
+                policy.RequireRole(nameof(UserRole.SuperAdmin)));
 
         return services;
     }

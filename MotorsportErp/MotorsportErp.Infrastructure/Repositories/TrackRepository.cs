@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Domain.Tracks;
+using MotorsportErp.Infrastructure.Extensions;
 using MotorsportErp.Infrastructure.Persistence;
+using System.Linq.Expressions;
 
 namespace MotorsportErp.Infrastructure.Repositories;
 
@@ -21,10 +23,19 @@ public class TrackRepository : ITrackRepository
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
-    public async Task<List<Track>> GetAllAsync()
+    public async Task<(List<Track> Items, int TotalCount)> GetPagedAsync(
+            Expression<Func<Track, bool>>? filter,
+            int page,
+            int pageSize)
     {
-        return await _context.Tracks
-            .ToListAsync();
+        var query = _context.Tracks.AsQueryable();
+
+        if (filter != null)
+        {
+            query = query.Where(filter);
+        }
+
+        return await query.ToPagedTupleAsync(page, pageSize);
     }
 
     public async Task<bool> HasUserVotedAsync(Guid trackId, Guid userId)

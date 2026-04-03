@@ -2,7 +2,7 @@
 
 namespace MotorsportErp.Application.Interfaces.Repositories;
 
-public interface IUserRepository : IBaseRepository<User>
+public interface IUserRepository : IBaseRepository<User>, IPagedRepository<User>
 {
     Task<User?> GetByEmailAsync(string email);
 

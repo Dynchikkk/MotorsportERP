@@ -2,9 +2,7 @@
 
 namespace MotorsportErp.Application.Interfaces.Repositories;
 
-public interface ICarRepository : IBaseRepository<Car>
+public interface ICarRepository : IBaseRepository<Car>, IPagedRepository<Car>
 {
-    Task<List<Car>> GetByUserIdAsync(Guid ownerId);
-
     Task<bool> HasActiveApplicationsAsync(Guid carId);
 }

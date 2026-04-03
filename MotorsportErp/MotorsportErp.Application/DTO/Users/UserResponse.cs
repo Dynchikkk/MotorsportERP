@@ -1,6 +1,4 @@
-﻿using MotorsportErp.Domain.Users;
-
-namespace MotorsportErp.Application.DTO.Users;
+﻿namespace MotorsportErp.Application.DTO.Users;
 
 public class UserResponse
 {

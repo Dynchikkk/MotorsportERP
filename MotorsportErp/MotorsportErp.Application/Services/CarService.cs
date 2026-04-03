@@ -1,4 +1,5 @@
 ﻿using MotorsportErp.Application.DTO.Cars;
+using MotorsportErp.Application.DTO.Common;
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Application.Interfaces.Services;
 using MotorsportErp.Application.Mappers;
@@ -40,11 +41,17 @@ public class CarService : ICarService
         return car.Id;
     }
 
-    public async Task<List<CarResponse>> GetUserCarsAsync(Guid userId)
+    public async Task<PagedResponse<CarResponse>> GetUserCarsAsync(Guid userId, int page = 0, int pageSize = 20)
     {
-        var cars = await _carRepository.GetByUserIdAsync(userId);
+        var (cars, totalCount) = await _carRepository.GetPagedAsync(c => c.OwnerId == userId, page, pageSize);
 
-        return cars.Select(CarMapper.ToResponse).ToList();
+        return new PagedResponse<CarResponse>
+        {
+            Items = cars.Select(CarMapper.ToResponse).ToList(),
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
     }
 
     public async Task UpdateAsync(Guid userId, Guid carId, CarUpdateRequest request)
@@ -72,11 +79,15 @@ public class CarService : ICarService
         var car = await _carRepository.GetByIdAsync(carId) ?? throw new KeyNotFoundException("Car not found");
 
         if (car.OwnerId != userId)
+        {
             throw new UnauthorizedAccessException("No permission");
+        }
 
         bool hasActive = await _carRepository.HasActiveApplicationsAsync(carId);
         if (hasActive)
+        {
             throw new InvalidOperationException("Cannot delete car used in active tournaments");
+        }
 
         await _carRepository.DeleteAsync(car);
     }

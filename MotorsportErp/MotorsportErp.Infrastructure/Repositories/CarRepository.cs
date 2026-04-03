@@ -2,7 +2,9 @@
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Domain.Cars;
 using MotorsportErp.Domain.Tournaments;
+using MotorsportErp.Infrastructure.Extensions;
 using MotorsportErp.Infrastructure.Persistence;
+using System.Linq.Expressions;
 
 namespace MotorsportErp.Infrastructure.Repositories;
 
@@ -23,11 +25,19 @@ public class CarRepository : ICarRepository
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
-    public async Task<List<Car>> GetByUserIdAsync(Guid userId)
+    public async Task<(List<Car> Items, int TotalCount)> GetPagedAsync(
+        Expression<Func<Car, bool>>? filter,
+        int page,
+        int pageSize)
     {
-        return await _context.Cars
-            .Where(c => c.OwnerId == userId)
-            .ToListAsync();
+        var query = _context.Cars.AsQueryable();
+
+        if (filter != null)
+        {
+            query = query.Where(filter);
+        }
+
+        return await query.ToPagedTupleAsync(page, pageSize);
     }
 
     public async Task AddAsync(Car entity)

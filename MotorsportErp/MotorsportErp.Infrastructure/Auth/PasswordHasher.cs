@@ -46,6 +46,6 @@ public class PasswordHasher : IPasswordHasher
 
         var keyToCheck = algorithm.GetBytes(KeySize);
 
-        return keyToCheck.SequenceEqual(key);
+        return CryptographicOperations.FixedTimeEquals(keyToCheck, key);
     }
 }

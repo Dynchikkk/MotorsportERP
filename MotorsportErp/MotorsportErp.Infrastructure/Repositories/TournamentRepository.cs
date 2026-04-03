@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Domain.Tournaments;
+using MotorsportErp.Infrastructure.Extensions;
 using MotorsportErp.Infrastructure.Persistence;
+using System.Linq.Expressions;
 
 namespace MotorsportErp.Infrastructure.Repositories;
 
@@ -26,11 +28,21 @@ public class TournamentRepository : ITournamentRepository
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
-    public async Task<List<Tournament>> GetAllAsync()
+    public async Task<(List<Tournament> Items, int TotalCount)> GetPagedAsync(
+            Expression<Func<Tournament, bool>>? filter,
+            int page,
+            int pageSize)
     {
-        return await _context.Tournaments
+        var query = _context.Tournaments
             .Include(t => t.Applications)
-            .ToListAsync();
+            .AsQueryable();
+
+        if (filter != null)
+        {
+            query = query.Where(filter);
+        }
+
+        return await query.ToPagedTupleAsync(page, pageSize);
     }
 
     public async Task<List<Tournament>> GetByStatusAsync(TournamentStatus status)

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using MotorsportErp.Application.Common.Settings;
+using MotorsportErp.Application.DTO.Common;
 using MotorsportErp.Application.DTO.Tracks;
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Application.Interfaces.Services;
@@ -26,10 +27,17 @@ public class TrackService : ITrackService
         _settings = options.Value;
     }
 
-    public async Task<List<TrackResponse>> GetAllAsync()
+    public async Task<PagedResponse<TrackResponse>> GetAllAsync(int page = 0, int pageSize = 20)
     {
-        List<Track> tracks = await _trackRepository.GetAllAsync();
-        return TrackMapper.ToResponseList(tracks).ToList();
+        var (tracks, totalCount) = await _trackRepository.GetPagedAsync(null, page, pageSize);
+
+        return new PagedResponse<TrackResponse>
+        {
+            Items = tracks.Select(TrackMapper.ToResponse).ToList(),
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
     }
 
     public async Task<TrackDetailsResponse> GetByIdAsync(Guid id)
@@ -40,11 +48,9 @@ public class TrackService : ITrackService
 
     public async Task<Guid> CreateAsync(Guid userId, TrackCreateRequest request)
     {
-        Domain.Users.User user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
-
-        bool isPrivileged = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
-
-        if (!isPrivileged && user.RaceCount < _settings.MinRacesToCreate)
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
+        if (!isModerator && user.RaceCount < _settings.MinRacesToCreate)
         {
             throw new UnauthorizedAccessException("Not enough races to create track");
         }
@@ -52,7 +58,7 @@ public class TrackService : ITrackService
         Track track = TrackMapper.ToEntity(request, userId);
         track.ConfirmationThreshold = _settings.DefaultConfirmationThreshold;
 
-        if (isPrivileged && request.Status.HasValue)
+        if (isModerator && request.Status.HasValue)
         {
             track.Status = request.Status.Value;
         }
@@ -64,13 +70,20 @@ public class TrackService : ITrackService
 
     public async Task VoteAsync(Guid userId, Guid trackId, bool isPositive)
     {
-        var track = await _trackRepository.GetByIdAsync(trackId) ?? throw new KeyNotFoundException("Track not found");
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        if (user.IsBlocked)
+            throw new UnauthorizedAccessException("User is blocked");
 
+        var track = await _trackRepository.GetByIdAsync(trackId) ?? throw new KeyNotFoundException("Track not found");
         if (track.Status != TrackStatus.Unofficial)
+        {
             throw new InvalidOperationException("Can only vote for unofficial tracks");
+        }
+
+        if (track.CreatedById == userId)
+            throw new InvalidOperationException("Cannot vote for your own track");
 
         var existingVote = track.Votes.FirstOrDefault(v => v.UserId == userId);
-
         if (existingVote != null)
         {
             existingVote.IsPositive = isPositive;
@@ -97,20 +110,14 @@ public class TrackService : ITrackService
 
     public async Task ConfirmAsync(Guid userId, Guid trackId)
     {
-        var user = await _userRepository.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found");
-
-        var track = await _trackRepository.GetByIdAsync(trackId)
-            ?? throw new KeyNotFoundException("Track not found");
-
-        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) ||
-                           user.Roles.HasFlag(UserRole.SuperAdmin);
-
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
         if (!isModerator)
         {
             throw new UnauthorizedAccessException("Only moderator can confirm track");
         }
 
+        var track = await _trackRepository.GetByIdAsync(trackId) ?? throw new KeyNotFoundException("Track not found");
         if (track.Status == TrackStatus.Confirmed)
         {
             throw new InvalidOperationException("Track already confirmed");
@@ -123,16 +130,14 @@ public class TrackService : ITrackService
 
     public async Task UpdateAsync(Guid userId, Guid trackId, TrackUpdateRequest request)
     {
-        var user = await _userRepository.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found");
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        if (user.IsBlocked)
+            throw new UnauthorizedAccessException("User is blocked");
 
-        var track = await _trackRepository.GetByIdAsync(trackId)
-            ?? throw new KeyNotFoundException("Track not found");
+        var track = await _trackRepository.GetByIdAsync(trackId) ?? throw new KeyNotFoundException("Track not found");
 
         bool isOwner = track.CreatedById == userId;
-        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) ||
-                           user.Roles.HasFlag(UserRole.SuperAdmin);
-
+        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
         if (!isOwner && !isModerator)
         {
             throw new UnauthorizedAccessException("You cannot edit this track");
@@ -147,16 +152,11 @@ public class TrackService : ITrackService
 
     public async Task DeleteAsync(Guid userId, Guid trackId)
     {
-        var user = await _userRepository.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found");
-
-        var track = await _trackRepository.GetByIdAsync(trackId)
-            ?? throw new KeyNotFoundException("Track not found");
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        var track = await _trackRepository.GetByIdAsync(trackId) ?? throw new KeyNotFoundException("Track not found");
 
         bool isOwner = track.CreatedById == userId;
-        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) ||
-                           user.Roles.HasFlag(UserRole.SuperAdmin);
-
+        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
         if (!isOwner && !isModerator)
         {
             throw new UnauthorizedAccessException("You cannot delete this track");
@@ -172,20 +172,14 @@ public class TrackService : ITrackService
 
     public async Task MakeOfficialAsync(Guid userId, Guid trackId)
     {
-        var user = await _userRepository.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found");
-
-        var track = await _trackRepository.GetByIdAsync(trackId)
-            ?? throw new KeyNotFoundException("Track not found");
-
-        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) ||
-                           user.Roles.HasFlag(UserRole.SuperAdmin);
-
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
         if (!isModerator)
         {
             throw new UnauthorizedAccessException("Only moderator can make track official");
         }
 
+        var track = await _trackRepository.GetByIdAsync(trackId) ?? throw new KeyNotFoundException("Track not found");
         if (track.Status != TrackStatus.Confirmed)
         {
             throw new InvalidOperationException("Track must be confirmed first");

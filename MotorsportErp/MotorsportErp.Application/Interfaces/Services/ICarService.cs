@@ -1,10 +1,11 @@
 ﻿using MotorsportErp.Application.DTO.Cars;
+using MotorsportErp.Application.DTO.Common;
 
 namespace MotorsportErp.Application.Interfaces.Services;
 
 public interface ICarService
 {
-    Task<List<CarResponse>> GetUserCarsAsync(Guid userId);
+    Task<PagedResponse<CarResponse>> GetUserCarsAsync(Guid userId, int page = 0, int pageSize = 20);
 
     Task<Guid> CreateAsync(Guid userId, CarCreateRequest request);
 

@@ -38,7 +38,6 @@ public static class UserMapper
             Roles = user.Roles,
             IsBlocked = user.IsBlocked,
 
-            // Assuming the collections are initialized or eagerly loaded via .Include()
             CarsCount = user.Cars?.Count ?? 0,
             TournamentsCount = user.Applications?.Count ?? 0
         };
@@ -56,8 +55,21 @@ public static class UserMapper
             Email = request.Email,
             Nickname = request.Nickname,
             PasswordHash = passwordHash,
-            Roles = UserRole.Racer, // Default role for all new registrations
+            Roles = UserRole.Racer,
             IsBlocked = false
+        };
+    }
+
+    public static UserAdminResponse ToAdminResponse(User user)
+    {
+        return new UserAdminResponse
+        {
+            Id = user.Id,
+            Nickname = user.Nickname,
+            Email = user.Email,
+            Roles = user.Roles,
+            IsBlocked = user.IsBlocked,
+            RaceCount = user.RaceCount
         };
     }
 }

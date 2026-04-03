@@ -1,10 +1,11 @@
-﻿using MotorsportErp.Application.DTO.Tracks;
+﻿using MotorsportErp.Application.DTO.Common;
+using MotorsportErp.Application.DTO.Tracks;
 
 namespace MotorsportErp.Application.Interfaces.Services;
 
 public interface ITrackService
 {
-    Task<List<TrackResponse>> GetAllAsync();
+    Task<PagedResponse<TrackResponse>> GetAllAsync(int page = 0, int pageSize = 20);
     Task<TrackDetailsResponse> GetByIdAsync(Guid id);
 
     Task<Guid> CreateAsync(Guid userId, TrackCreateRequest request);

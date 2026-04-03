@@ -1,10 +1,11 @@
-﻿using MotorsportErp.Application.DTO.Tournaments;
+﻿using MotorsportErp.Application.DTO.Common;
+using MotorsportErp.Application.DTO.Tournaments;
 
 namespace MotorsportErp.Application.Interfaces.Services;
 
 public interface ITournamentService
 {
-    Task<List<TournamentResponse>> GetAllAsync();
+    Task<PagedResponse<TournamentResponse>> GetAllAsync(int page = 0, int pageSize = 20);
     Task<TournamentDetailsResponse> GetByIdAsync(Guid id);
 
     Task<Guid> CreateAsync(Guid userId, TournamentCreateRequest request);

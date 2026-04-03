@@ -2,10 +2,8 @@
 
 namespace MotorsportErp.Application.Interfaces.Repositories;
 
-public interface ITournamentRepository : IBaseRepository<Tournament>
+public interface ITournamentRepository : IBaseRepository<Tournament>, IPagedRepository<Tournament>
 {
-    Task<List<Tournament>> GetAllAsync();
-
     Task<List<Tournament>> GetByStatusAsync(TournamentStatus status);
 
     Task AddApplicationAsync(TournamentApplication application);

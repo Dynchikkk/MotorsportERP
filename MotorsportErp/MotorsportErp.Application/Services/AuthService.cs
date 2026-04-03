@@ -70,18 +70,25 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> RefreshTokenAsync(string accessToken, string refreshToken)
     {
-        var principal = _jwtProvider.GetPrincipalFromExpiredToken(accessToken)
-            ?? throw new SecurityTokenException("Invalid access/refresh token");
+        var principal = _jwtProvider.GetPrincipalFromExpiredToken(accessToken) ?? throw new SecurityTokenException("Invalid access/refresh token");
 
         var userIdStr = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(userIdStr, out var userId))
+        {
             throw new SecurityTokenException("Invalid token claims");
+        }
 
-        var user = await _userRepository.GetByIdAsync(userId)
-            ?? throw new SecurityTokenException("Invalid request");
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new SecurityTokenException("Invalid request");
+
+        if (user.IsBlocked)
+        {
+            throw new UnauthorizedAccessException("Account is blocked");
+        }
 
         if (user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        {
             throw new SecurityTokenException("Invalid or expired refresh token");
+        }
 
         var newAccessToken = _jwtProvider.GenerateToken(user);
         var newRefreshToken = _jwtProvider.GenerateRefreshToken();

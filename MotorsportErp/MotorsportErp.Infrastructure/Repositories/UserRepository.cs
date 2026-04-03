@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Domain.Users;
+using MotorsportErp.Infrastructure.Extensions;
 using MotorsportErp.Infrastructure.Persistence;
+using System.Linq.Expressions;
 
 namespace MotorsportErp.Infrastructure.Repositories;
 
@@ -21,6 +23,21 @@ public class UserRepository : IUserRepository
             .Include(u => u.Applications)
             .Include(u => u.Results)
             .FirstOrDefaultAsync(u => u.Id == id);
+    }
+
+    public async Task<(List<User> Items, int TotalCount)> GetPagedAsync(
+            Expression<Func<User, bool>>? filter,
+            int page,
+            int pageSize)
+    {
+        var query = _context.Users.AsQueryable();
+
+        if (filter != null)
+        {
+            query = query.Where(filter);
+        }
+
+        return await query.ToPagedTupleAsync(page, pageSize);
     }
 
     public async Task<User?> GetByEmailAsync(string email)
