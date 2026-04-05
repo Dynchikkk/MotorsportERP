@@ -72,7 +72,9 @@ public class TrackService : ITrackService
     {
         var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
         if (user.IsBlocked)
+        {
             throw new UnauthorizedAccessException("User is blocked");
+        }
 
         var track = await _trackRepository.GetByIdAsync(trackId) ?? throw new KeyNotFoundException("Track not found");
         if (track.Status != TrackStatus.Unofficial)
@@ -81,7 +83,9 @@ public class TrackService : ITrackService
         }
 
         if (track.CreatedById == userId)
+        {
             throw new InvalidOperationException("Cannot vote for your own track");
+        }
 
         var existingVote = track.Votes.FirstOrDefault(v => v.UserId == userId);
         if (existingVote != null)
@@ -132,7 +136,9 @@ public class TrackService : ITrackService
     {
         var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
         if (user.IsBlocked)
+        {
             throw new UnauthorizedAccessException("User is blocked");
+        }
 
         var track = await _trackRepository.GetByIdAsync(trackId) ?? throw new KeyNotFoundException("Track not found");
 

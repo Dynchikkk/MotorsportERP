@@ -3,8 +3,6 @@
 public class TournamentResultRequest
 {
     public Guid UserId { get; set; }
-
     public int Position { get; set; }
-
-    public int Points { get; set; }
+    public TimeSpan? BestLapTime { get; set; }
 }

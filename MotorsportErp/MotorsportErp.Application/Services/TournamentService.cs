@@ -177,22 +177,21 @@ public class TournamentService : ITournamentService
 
     public async Task ApproveAsync(Guid userId, Guid applicationId)
     {
-        var user = await _userRepository.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found");
-
-        var application = await _applicationRepository.GetByIdAsync(applicationId)
-            ?? throw new KeyNotFoundException("Application not found");
-
-        var tournament = await _tournamentRepository.GetByIdAsync(application.TournamentId)
-            ?? throw new KeyNotFoundException("Tournament not found");
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        var application = await _applicationRepository.GetByIdAsync(applicationId) ?? throw new KeyNotFoundException("Application not found");
+        var tournament = await _tournamentRepository.GetByIdAsync(application.TournamentId) ?? throw new KeyNotFoundException("Tournament not found");
 
         if (!HasAccess(tournament, user))
         {
-            throw new UnauthorizedAccessException("No permission");
+            throw new UnauthorizedAccessException("Only organizers can approve applications.");
+        }
+
+        if (application.Status != TournamentApplicationStatus.Pending)
+        {
+            throw new InvalidOperationException("Application is not pending");
         }
 
         application.Status = TournamentApplicationStatus.Approved;
-
         var approvedCount = await _applicationRepository.GetApprovedCountAsync(tournament.Id);
 
         if (approvedCount >= tournament.RequiredParticipants)
@@ -206,14 +205,9 @@ public class TournamentService : ITournamentService
 
     public async Task RejectAsync(Guid userId, Guid applicationId)
     {
-        var user = await _userRepository.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found");
-
-        var application = await _applicationRepository.GetByIdAsync(applicationId)
-            ?? throw new KeyNotFoundException("Application not found");
-
-        var tournament = await _tournamentRepository.GetByIdAsync(application.TournamentId)
-            ?? throw new KeyNotFoundException("Tournament not found");
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        var application = await _applicationRepository.GetByIdAsync(applicationId) ?? throw new KeyNotFoundException("Application not found");
+        var tournament = await _tournamentRepository.GetByIdAsync(application.TournamentId) ?? throw new KeyNotFoundException("Tournament not found");
 
         if (!HasAccess(tournament, user))
         {
@@ -227,11 +221,8 @@ public class TournamentService : ITournamentService
 
     public async Task StartAsync(Guid userId, Guid tournamentId)
     {
-        var user = await _userRepository.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found");
-
-        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
-            ?? throw new KeyNotFoundException("Tournament not found");
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new KeyNotFoundException("Tournament not found");
 
         if (!HasAccess(tournament, user))
         {
@@ -289,11 +280,8 @@ public class TournamentService : ITournamentService
 
     public async Task AddResultAsync(Guid userId, Guid tournamentId, TournamentResultRequest request)
     {
-        var user = await _userRepository.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found");
-
-        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
-            ?? throw new KeyNotFoundException("Tournament not found");
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new KeyNotFoundException("Tournament not found");
 
         if (!HasAccess(tournament, user))
         {
@@ -315,16 +303,12 @@ public class TournamentService : ITournamentService
             throw new ArgumentException("Invalid position");
         }
 
-        if (request.Points < 0)
-        {
-            throw new ArgumentException("Invalid points");
-        }
-
         tournament.Results.Add(new TournamentResult
         {
             Id = Guid.NewGuid(),
             UserId = request.UserId,
-            Position = request.Position
+            Position = request.Position,
+            BestLapTime = request.BestLapTime
         });
 
         await _tournamentRepository.UpdateAsync(tournament);
