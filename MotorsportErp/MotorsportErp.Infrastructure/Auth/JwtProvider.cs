@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using MotorsportErp.Application.Interfaces.Security;
 using MotorsportErp.Domain.Users;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,9 +13,9 @@ public class JwtProvider : IJwtProvider
 {
     private readonly JwtSettings _settings;
 
-    public JwtProvider(JwtSettings settings)
+    public JwtProvider(IOptions<JwtSettings> options)
     {
-        _settings = settings;
+        _settings = options.Value;
     }
 
     public string GenerateToken(User user)
