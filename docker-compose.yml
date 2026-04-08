@@ -14,17 +14,12 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./user_data/photos:/app/wwwroot/uploads
+      - photos_data:/app/wwwroot/uploads
     environment:
       # ENV
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       # DB 
       - ConnectionStrings__DefaultConnection=Server=${DB_HOST};Database=${DB_NAME};User=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True
-      # JWT
-      - JwtSettings__Secret=${JWT_SECRET}
-      - JwtSettings__Issuer=${JWT_ISSUER}
-      - JwtSettings__Audience=${JWT_AUDIENCE}
-      - JwtSettings__ExpirationHours=${JWT_EXPIRATION_HOURS}
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -45,3 +40,4 @@ services:
 
 volumes:
   sql_data:
+  photos_data:  

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MotorsportErp.Application.Common.Settings;
 using MotorsportErp.Infrastructure.Auth;
 using MotorsportErp.Infrastructure.Persistence;
+using MotorsportErp.Infrastructure.Persistence.Settings;
 using MotorsportErp.WebApi.Extensions;
 using MotorsportErp.WebApi.Middlewares;
 
@@ -11,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.Configure<TrackSettings>(builder.Configuration.GetSection("TrackSettings"));
 builder.Services.Configure<TournamentSettings>(builder.Configuration.GetSection("TournamentSettings"));
+builder.Services.Configure<SeedSettings>(builder.Configuration.GetSection("SeedSettings"));
 
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -81,14 +83,17 @@ var app = builder.Build();
 // Middleware
 if (app.Environment.IsDevelopment())
 {
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        db.Database.Migrate();
-    }
-
     _ = app.UseSwagger();
     _ = app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var initializer = services.GetRequiredService<DbInitializer>();
+    await initializer.InitializeAsync();
+    await initializer.SeedAsync();
 }
 
 app.UseMiddleware<ExceptionMiddleware>();

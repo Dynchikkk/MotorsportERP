@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MotorsportErp.Domain.BaseEntities;
 using MotorsportErp.Domain.Cars;
 using MotorsportErp.Domain.Tournaments;
 using MotorsportErp.Domain.Tracks;
@@ -35,5 +36,24 @@ public class AppDbContext : DbContext
         _ = modelBuilder.ApplyConfiguration(new TournamentApplicationConfig());
         _ = modelBuilder.ApplyConfiguration(new TournamentResultConfig());
         _ = modelBuilder.ApplyConfiguration(new TournamentOrganizerConfig());
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var entries = ChangeTracker
+            .Entries()
+            .Where(e => e.Entity is GuidEntity && (
+                    e.State == EntityState.Added ||
+                    e.State == EntityState.Modified));
+
+        foreach (var entityEntry in entries)
+        {
+            if (entityEntry.State == EntityState.Modified)
+            {
+                ((GuidEntity)entityEntry.Entity).UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
+        return base.SaveChangesAsync(cancellationToken);
     }
 }
