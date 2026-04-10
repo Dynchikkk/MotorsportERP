@@ -5,7 +5,7 @@ namespace MotorsportErp.Application.Interfaces.Services;
 
 public interface ITrackService : IPhotoService
 {
-    Task<PagedResponse<TrackResponse>> GetAllAsync(int page = 0, int pageSize = 20);
+    Task<PagedResponse<TrackResponse>> GetAllAsync(TrackListQuery query, int page = 0, int pageSize = 20);
     Task<TrackDetailsResponse> GetByIdAsync(Guid id);
 
     Task<Guid> CreateAsync(Guid userId, TrackCreateRequest request);

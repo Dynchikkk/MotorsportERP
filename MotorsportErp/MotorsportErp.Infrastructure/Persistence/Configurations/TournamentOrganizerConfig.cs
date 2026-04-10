@@ -20,6 +20,6 @@ public class TournamentOrganizerConfig : IEntityTypeConfiguration<TournamentOrga
             .HasForeignKey(o => o.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasQueryFilter(e => !e.IsDeleted);
+        _ = builder.HasQueryFilter(e => !e.IsDeleted);
     }
 }

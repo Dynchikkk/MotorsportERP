@@ -11,7 +11,6 @@ public class Track : GuidEntity
 
     public required string Name { get; set; }
     public required string Location { get; set; }
-    public string? LayoutImageUrl { get; set; }
 
     public int ConfirmationThreshold { get; set; } = 10;
     public int VoteCount => Votes.Count(v => v.IsPositive);

@@ -7,6 +7,7 @@ namespace MotorsportErp.Application.Interfaces.Services;
 public interface IUserService
 {
     Task<UserResponse> GetByIdAsync(Guid id);
+    Task<PublicUserProfileResponse> GetPublicProfileAsync(Guid id);
     Task<UserProfileResponse> GetProfileAsync(Guid id);
 
     Task<PagedResponse<UserResponse>> GetAllAsync(string? search, int page = 0, int pageSize = 20);

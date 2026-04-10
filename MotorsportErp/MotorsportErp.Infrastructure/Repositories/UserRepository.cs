@@ -20,8 +20,25 @@ public class UserRepository : IUserRepository
     {
         return await _context.Users
             .Include(u => u.Cars)
+                .ThenInclude(c => c.Photos)
             .Include(u => u.Applications)
+                .ThenInclude(a => a.Tournament)
+                    .ThenInclude(t => t.Track)
+            .Include(u => u.Applications)
+                .ThenInclude(a => a.Car)
+                    .ThenInclude(c => c.Photos)
             .Include(u => u.Results)
+                .ThenInclude(r => r.Tournament)
+                    .ThenInclude(t => t.Track)
+            .Include(u => u.OrganizedTournaments)
+                .ThenInclude(o => o.Tournament)
+                    .ThenInclude(t => t.Track)
+            .Include(u => u.OrganizedTournaments)
+                .ThenInclude(o => o.Tournament)
+                    .ThenInclude(t => t.Applications)
+            .Include(u => u.OrganizedTournaments)
+                .ThenInclude(o => o.Tournament)
+                    .ThenInclude(t => t.Photos)
             .Include(u => u.Avatar)
             .FirstOrDefaultAsync(u => u.Id == id);
     }

@@ -28,10 +28,11 @@ public class TracksController : ControllerBase
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResponse<TrackResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResponse<TrackResponse>>> GetAll(
+        [FromQuery] TrackListQuery query,
         [FromQuery] int page = 0,
         [FromQuery] int pageSize = 20)
     {
-        var result = await trackService.GetAllAsync(page, pageSize);
+        var result = await trackService.GetAllAsync(query, page, pageSize);
         return Ok(result);
     }
 

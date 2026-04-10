@@ -22,6 +22,18 @@ public static class UserMapper
         };
     }
 
+    public static PublicUserProfileResponse ToPublicProfile(User user)
+    {
+        return new PublicUserProfileResponse
+        {
+            Id = user.Id,
+            Nickname = user.Nickname,
+            Bio = user.Bio,
+            RaceCount = user.RaceCount,
+            Avatar = user.Avatar != null ? MediaFileMapper.ToResponse(user.Avatar) : null
+        };
+    }
+
     /// <summary>
     /// Maps a User domain entity to a detailed UserProfileResponse DTO.
     /// Includes private data and aggregate counts for cars and tournaments.
@@ -34,14 +46,9 @@ public static class UserMapper
             Nickname = user.Nickname,
             Bio = user.Bio,
             RaceCount = user.RaceCount,
-
             Email = user.Email,
             Roles = user.Roles,
             IsBlocked = user.IsBlocked,
-
-            CarsCount = user.Cars?.Count ?? 0,
-            TournamentsCount = user.Applications?.Count ?? 0,
-
             Avatar = user.Avatar != null ? MediaFileMapper.ToResponse(user.Avatar) : null
         };
     }

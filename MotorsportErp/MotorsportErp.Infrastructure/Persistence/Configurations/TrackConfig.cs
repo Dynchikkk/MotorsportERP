@@ -13,6 +13,6 @@ public class TrackConfig : IEntityTypeConfiguration<Track>
             .HasForeignKey(t => t.CreatedById)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasQueryFilter(e => !e.IsDeleted);
+        _ = builder.HasQueryFilter(e => !e.IsDeleted);
     }
 }

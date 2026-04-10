@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MotorsportErp.Application.DTO.Tracks;
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Domain.Tracks;
 using MotorsportErp.Infrastructure.Extensions;
@@ -21,6 +22,12 @@ public class TrackRepository : ITrackRepository
         return await _context.Tracks
             .Include(t => t.Votes)
             .Include(t => t.Photos)
+            .Include(t => t.CreatedBy)
+                .ThenInclude(u => u.Avatar)
+            .Include(t => t.Tournaments)
+                .ThenInclude(tournament => tournament.Applications)
+            .Include(t => t.Tournaments)
+                .ThenInclude(tournament => tournament.Photos)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
@@ -39,6 +46,30 @@ public class TrackRepository : ITrackRepository
         }
 
         return await query.ToPagedTupleAsync(page, pageSize);
+    }
+
+    public async Task<(List<Track> Items, int TotalCount)> GetFilteredPagedAsync(
+        TrackListQuery query,
+        int page,
+        int pageSize)
+    {
+        var tracksQuery = _context.Tracks
+            .Include(t => t.Photos)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            tracksQuery = tracksQuery.Where(t =>
+                t.Name.Contains(query.Search) ||
+                t.Location.Contains(query.Search));
+        }
+
+        if (query.Status.HasValue)
+        {
+            tracksQuery = tracksQuery.Where(t => t.Status == query.Status.Value);
+        }
+
+        return await tracksQuery.ToPagedTupleAsync(page, pageSize);
     }
 
     public async Task<bool> HasUserVotedAsync(Guid trackId, Guid userId)

@@ -13,6 +13,6 @@ public class CarConfig : IEntityTypeConfiguration<Car>
             .HasForeignKey(c => c.OwnerId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasQueryFilter(e => !e.IsDeleted);
+        _ = builder.HasQueryFilter(e => !e.IsDeleted);
     }
 }

@@ -18,6 +18,6 @@ public class TournamentConfig : IEntityTypeConfiguration<Tournament>
             .HasForeignKey(t => t.CreatorId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasQueryFilter(e => !e.IsDeleted);
+        _ = builder.HasQueryFilter(e => !e.IsDeleted);
     }
 }

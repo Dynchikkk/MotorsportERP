@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MotorsportErp.Application.DTO.Tournaments;
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Domain.Tournaments;
 using MotorsportErp.Infrastructure.Extensions;
@@ -19,13 +20,23 @@ public class TournamentRepository : ITournamentRepository
     public async Task<Tournament?> GetByIdAsync(Guid id)
     {
         return await _context.Tournaments
+            .Include(t => t.Track)
+                .ThenInclude(track => track.Votes)
+            .Include(t => t.Track)
+                .ThenInclude(track => track.Photos)
             .Include(t => t.Applications)
                 .ThenInclude(a => a.User)
+                    .ThenInclude(u => u.Avatar)
             .Include(t => t.Applications)
                 .ThenInclude(a => a.Car)
+                    .ThenInclude(c => c.Photos)
             .Include(t => t.Photos)
             .Include(t => t.Results)
+                .ThenInclude(r => r.User)
+                    .ThenInclude(u => u.Avatar)
             .Include(t => t.Organizers)
+                .ThenInclude(o => o.User)
+                    .ThenInclude(u => u.Avatar)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
@@ -37,6 +48,7 @@ public class TournamentRepository : ITournamentRepository
         var query = _context.Tournaments
             .Include(t => t.Applications)
             .Include(t => t.Photos)
+            .Include(t => t.Track)
             .AsQueryable();
 
         if (filter != null)
@@ -45,6 +57,37 @@ public class TournamentRepository : ITournamentRepository
         }
 
         return await query.ToPagedTupleAsync(page, pageSize);
+    }
+
+    public async Task<(List<Tournament> Items, int TotalCount)> GetFilteredPagedAsync(
+        TournamentListQuery query,
+        int page,
+        int pageSize)
+    {
+        var tournamentsQuery = _context.Tournaments
+            .Include(t => t.Applications)
+            .Include(t => t.Photos)
+            .Include(t => t.Track)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            tournamentsQuery = tournamentsQuery.Where(t =>
+                t.Name.Contains(query.Search) ||
+                t.Description.Contains(query.Search));
+        }
+
+        if (query.Status.HasValue)
+        {
+            tournamentsQuery = tournamentsQuery.Where(t => t.Status == query.Status.Value);
+        }
+
+        if (query.TrackId.HasValue)
+        {
+            tournamentsQuery = tournamentsQuery.Where(t => t.TrackId == query.TrackId.Value);
+        }
+
+        return await tournamentsQuery.ToPagedTupleAsync(page, pageSize);
     }
 
     public async Task<List<Tournament>> GetByStatusAsync(TournamentStatus status)
@@ -95,7 +138,9 @@ public class TournamentRepository : ITournamentRepository
         return await _context.TournamentApplications
             .Where(a => a.TournamentId == tournamentId)
             .Include(a => a.Car)
+                .ThenInclude(c => c.Photos)
             .Include(a => a.User)
+                .ThenInclude(u => u.Avatar)
             .ToListAsync();
     }
 
@@ -118,11 +163,14 @@ public class TournamentRepository : ITournamentRepository
         try
         {
             var application = await _context.TournamentApplications.FindAsync(applicationId);
-            if (application == null || application.Status != TournamentApplicationStatus.Pending) return;
+            if (application == null || application.Status != TournamentApplicationStatus.Pending)
+            {
+                return;
+            }
 
             application.Status = TournamentApplicationStatus.Approved;
-            _context.TournamentApplications.Update(application);
-            await _context.SaveChangesAsync();
+            _ = _context.TournamentApplications.Update(application);
+            _ = await _context.SaveChangesAsync();
 
             var tournament = await _context.Tournaments.FindAsync(application.TournamentId);
             if (tournament != null && tournament.Status == TournamentStatus.RegistrationOpen)
@@ -133,10 +181,11 @@ public class TournamentRepository : ITournamentRepository
                 if (approvedCount >= tournament.RequiredParticipants)
                 {
                     tournament.Status = TournamentStatus.Confirmed;
-                    _context.Tournaments.Update(tournament);
-                    await _context.SaveChangesAsync();
+                    _ = _context.Tournaments.Update(tournament);
+                    _ = await _context.SaveChangesAsync();
                 }
             }
+
             await transaction.CommitAsync();
         }
         catch

@@ -31,9 +31,10 @@ public class TrackService : ITrackService
         _fileRepository = fileRepository;
     }
 
-    public async Task<PagedResponse<TrackResponse>> GetAllAsync(int page = 0, int pageSize = 20)
+    public async Task<PagedResponse<TrackResponse>> GetAllAsync(TrackListQuery query, int page = 0, int pageSize = 20)
     {
-        var (tracks, totalCount) = await _trackRepository.GetPagedAsync(null, page, pageSize);
+        query ??= new TrackListQuery();
+        var (tracks, totalCount) = await _trackRepository.GetFilteredPagedAsync(query, page, pageSize);
 
         return new PagedResponse<TrackResponse>
         {
@@ -156,7 +157,6 @@ public class TrackService : ITrackService
 
         track.Name = request.Name;
         track.Location = request.Location;
-        track.LayoutImageUrl = request.LayoutImageUrl;
 
         await _trackRepository.UpdateAsync(track);
     }

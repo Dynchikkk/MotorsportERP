@@ -5,8 +5,12 @@ namespace MotorsportErp.Application.Interfaces.Services;
 
 public interface ITournamentService : IPhotoService
 {
-    Task<PagedResponse<TournamentResponse>> GetAllAsync(int page = 0, int pageSize = 20);
+    Task<PagedResponse<TournamentResponse>> GetAllAsync(
+        TournamentListQuery query,
+        int page = 0,
+        int pageSize = 20);
     Task<TournamentDetailsResponse> GetByIdAsync(Guid id);
+    Task<IReadOnlyCollection<TournamentApplicationResponse>> GetApplicationsAsync(Guid userId, Guid tournamentId);
 
     Task<Guid> CreateAsync(Guid userId, TournamentCreateRequest request);
     Task UpdateAsync(Guid userId, Guid tournamentId, TournamentUpdateRequest request);

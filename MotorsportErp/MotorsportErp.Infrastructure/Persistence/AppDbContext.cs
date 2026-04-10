@@ -44,23 +44,30 @@ public class AppDbContext : DbContext
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var entries = ChangeTracker
-            .Entries()
-            .Where(e => e.Entity is GuidEntity && (
-                    e.State == EntityState.Added ||
-                    e.State == EntityState.Modified));
+            .Entries<GuidEntity>()
+            .Where(e =>
+                e.State == EntityState.Added ||
+                e.State == EntityState.Modified ||
+                e.State == EntityState.Deleted);
 
         foreach (var entityEntry in entries)
         {
             switch (entityEntry.State)
             {
+                case EntityState.Added:
+                    entityEntry.Entity.CreatedAt = DateTime.UtcNow;
+                    entityEntry.Entity.UpdatedAt = DateTime.UtcNow;
+                    entityEntry.Entity.IsDeleted = false;
+                    break;
+
                 case EntityState.Modified:
-                    ((GuidEntity)entityEntry.Entity).UpdatedAt = DateTime.UtcNow;
+                    entityEntry.Entity.UpdatedAt = DateTime.UtcNow;
                     break;
 
                 case EntityState.Deleted:
                     entityEntry.State = EntityState.Modified;
-                    ((GuidEntity)entityEntry.Entity).IsDeleted = true;
-                    ((GuidEntity)entityEntry.Entity).UpdatedAt = DateTime.UtcNow;
+                    entityEntry.Entity.IsDeleted = true;
+                    entityEntry.Entity.UpdatedAt = DateTime.UtcNow;
                     break;
             }
         }

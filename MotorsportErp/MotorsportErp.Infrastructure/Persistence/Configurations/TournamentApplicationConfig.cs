@@ -25,6 +25,6 @@ public class TournamentApplicationConfig : IEntityTypeConfiguration<TournamentAp
             .HasForeignKey(a => a.CarId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasQueryFilter(e => !e.IsDeleted);
+        _ = builder.HasQueryFilter(e => !e.IsDeleted);
     }
 }

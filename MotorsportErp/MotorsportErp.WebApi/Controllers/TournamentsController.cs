@@ -32,13 +32,14 @@ public class TournamentsController : ControllerBase
     /// <param name="pageSize">The number of items per page.</param>
     /// <returns>A paginated list of TournamentResponse DTOs.</returns>
     [HttpGet]
-    [AllowAnonymous] // Anyone can view the list of tournaments
+    [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResponse<TournamentResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResponse<TournamentResponse>>> GetAll(
+        [FromQuery] TournamentListQuery query,
         [FromQuery] int page = 0,
         [FromQuery] int pageSize = 20)
     {
-        var result = await _tournamentService.GetAllAsync(page, pageSize);
+        var result = await _tournamentService.GetAllAsync(query, page, pageSize);
         return Ok(result);
     }
 
@@ -54,6 +55,19 @@ public class TournamentsController : ControllerBase
     public async Task<ActionResult<TournamentDetailsResponse>> GetById(Guid id)
     {
         var result = await _tournamentService.GetByIdAsync(id);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Retrieves all tournament applications for organizers and moderators.
+    /// </summary>
+    [HttpGet("{id}/applications")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<TournamentApplicationResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IReadOnlyCollection<TournamentApplicationResponse>>> GetApplications(Guid id)
+    {
+        var result = await _tournamentService.GetApplicationsAsync(User.GetUserId(), id);
         return Ok(result);
     }
 

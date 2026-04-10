@@ -36,6 +36,19 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
+    /// Retrieves the public profile of a specific user including cars and tournament history.
+    /// </summary>
+    [HttpGet("{id}/profile")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(PublicUserProfileResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<PublicUserProfileResponse>> GetPublicProfile(Guid id)
+    {
+        var profile = await _userService.GetPublicProfileAsync(id);
+        return Ok(profile);
+    }
+
+    /// <summary>
     /// Retrieves short info about the current user.
     /// </summary>
     [HttpGet("me")]
