@@ -1,9 +1,12 @@
-﻿using MotorsportErp.Application.DTO.Cars;
+﻿using MotorsportErp.Application.Common.Exceptions;
+using MotorsportErp.Application.DTO.Cars;
 using MotorsportErp.Application.DTO.Common;
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Application.Interfaces.Services;
 using MotorsportErp.Application.Mappers;
 using MotorsportErp.Domain.Cars;
+using MotorsportErp.Domain.Files;
+using MotorsportErp.Domain.Users;
 
 namespace MotorsportErp.Application.Services;
 
@@ -59,12 +62,10 @@ public class CarService : ICarService
 
     public async Task UpdateAsync(Guid userId, Guid carId, CarUpdateRequest request)
     {
-        var car = await _carRepository.GetByIdAsync(carId)
-            ?? throw new KeyNotFoundException("Car not found");
-
+        var car = await _carRepository.GetByIdAsync(carId) ?? throw new KeyNotFoundException("Car not found");
         if (car.OwnerId != userId)
         {
-            throw new UnauthorizedAccessException("No permission");
+            throw new ForbiddenException();
         }
 
         car.Model = request.Model;
@@ -80,10 +81,9 @@ public class CarService : ICarService
     public async Task DeleteAsync(Guid userId, Guid carId)
     {
         var car = await _carRepository.GetByIdAsync(carId) ?? throw new KeyNotFoundException("Car not found");
-
         if (car.OwnerId != userId)
         {
-            throw new UnauthorizedAccessException("No permission");
+            throw new ForbiddenException();
         }
 
         bool hasActive = await _carRepository.HasActiveApplicationsAsync(carId);
@@ -100,10 +100,15 @@ public class CarService : ICarService
         var car = await _carRepository.GetByIdAsync(targetEntityId) ?? throw new KeyNotFoundException("Car not found");
         if (car.OwnerId != userId)
         {
-            throw new UnauthorizedAccessException();
+            throw new ForbiddenException();
         }
 
         var photo = await _fileRepository.GetByIdAsync(photoId) ?? throw new KeyNotFoundException("Photo not found");
+        if (photo.UploadedById != userId)
+        {
+            throw new ForbiddenException("Only owner can use self photos");
+        }
+
         car.Photos.Add(photo);
         await _carRepository.UpdateAsync(car);
     }
@@ -113,7 +118,7 @@ public class CarService : ICarService
         var car = await _carRepository.GetByIdAsync(targetEntityId) ?? throw new KeyNotFoundException();
         if (car.OwnerId != userId)
         {
-            throw new UnauthorizedAccessException();
+            throw new ForbiddenException();
         }
 
         var photo = await _fileRepository.GetByIdAsync(photoId);

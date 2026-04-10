@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using MotorsportErp.Application.Common.Exceptions;
 using MotorsportErp.Application.Common.Settings;
 using MotorsportErp.Application.DTO.Common;
 using MotorsportErp.Application.DTO.Tracks;
@@ -57,7 +58,7 @@ public class TrackService : ITrackService
         bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
         if (!isModerator && user.RaceCount < _settings.MinRacesToCreate)
         {
-            throw new UnauthorizedAccessException("Not enough races to create track");
+            throw new ForbiddenException("Not enough races to create track");
         }
 
         Track track = TrackMapper.ToEntity(request, userId);
@@ -124,7 +125,7 @@ public class TrackService : ITrackService
         bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
         if (!isModerator)
         {
-            throw new UnauthorizedAccessException("Only moderator can confirm track");
+            throw new ForbiddenException("Only moderator can confirm track");
         }
 
         var track = await _trackRepository.GetByIdAsync(trackId) ?? throw new KeyNotFoundException("Track not found");
@@ -152,7 +153,7 @@ public class TrackService : ITrackService
         bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
         if (!isOwner && !isModerator)
         {
-            throw new UnauthorizedAccessException("You cannot edit this track");
+            throw new ForbiddenException("You cannot edit this track");
         }
 
         track.Name = request.Name;
@@ -170,7 +171,7 @@ public class TrackService : ITrackService
         bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
         if (!isOwner && !isModerator)
         {
-            throw new UnauthorizedAccessException("You cannot delete this track");
+            throw new ForbiddenException("You cannot delete this track");
         }
 
         if (track.Tournaments.Any(t => t.Status != TournamentStatus.Finished))
@@ -187,7 +188,7 @@ public class TrackService : ITrackService
         bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
         if (!isModerator)
         {
-            throw new UnauthorizedAccessException("Only moderator can make track official");
+            throw new ForbiddenException("Only moderator can make track official");
         }
 
         var track = await _trackRepository.GetByIdAsync(trackId) ?? throw new KeyNotFoundException("Track not found");
@@ -215,10 +216,15 @@ public class TrackService : ITrackService
         bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
         if (!isOwner && !isModerator)
         {
-            throw new UnauthorizedAccessException("You cannot edit this track");
+            throw new ForbiddenException("You cannot edit this track");
         }
 
         var photo = await _fileRepository.GetByIdAsync(photoId) ?? throw new KeyNotFoundException("Photo not found");
+        if (photo.UploadedById != userId)
+        {
+            throw new ForbiddenException("Only owner can use self photos");
+        }
+
         track.Photos.Add(photo);
         await _trackRepository.UpdateAsync(track);
     }
@@ -237,7 +243,7 @@ public class TrackService : ITrackService
         bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
         if (!isOwner && !isModerator)
         {
-            throw new UnauthorizedAccessException("You cannot edit this track");
+            throw new ForbiddenException("You cannot edit this track");
         }
 
         var photo = await _fileRepository.GetByIdAsync(photoId);

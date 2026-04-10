@@ -1,8 +1,11 @@
-﻿using MotorsportErp.Application.DTO.Common;
+﻿using MotorsportErp.Application.Common.Exceptions;
+using MotorsportErp.Application.DTO.Common;
 using MotorsportErp.Application.DTO.Users;
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Application.Interfaces.Services;
 using MotorsportErp.Application.Mappers;
+using MotorsportErp.Domain.Files;
+using MotorsportErp.Domain.Tournaments;
 using MotorsportErp.Domain.Users;
 using System.Linq.Expressions;
 
@@ -72,17 +75,15 @@ public class UserService : IUserService
 
     public async Task AssignRoleAsync(Guid adminId, Guid targetUserId, UserRole role)
     {
-        var admin = await _userRepository.GetByIdAsync(adminId)
-            ?? throw new KeyNotFoundException("Admin not found");
-
-        if (!admin.Roles.HasFlag(UserRole.SuperAdmin))
-        {
-            throw new UnauthorizedAccessException("Only super admin can assign roles");
-        }
-
         if (role == UserRole.SuperAdmin)
         {
             throw new InvalidOperationException("Cannot assign SuperAdmin role");
+        }
+
+        var admin = await _userRepository.GetByIdAsync(adminId) ?? throw new KeyNotFoundException("Admin not found");
+        if (!admin.Roles.HasFlag(UserRole.SuperAdmin))
+        {
+            throw new ForbiddenException("Only super admin can assign roles");
         }
 
         var user = await _userRepository.GetByIdAsync(targetUserId) ?? throw new KeyNotFoundException("User not found");
@@ -107,9 +108,16 @@ public class UserService : IUserService
 
         user.Nickname = request.Nickname;
         user.Bio = request.Bio;
-        user.Avatar = request.Avatar != null ?
-            await _fileRepository.GetByIdAsync(request.Avatar.Id) :
+
+        MediaFile? file = request.Avatar != null ?
+            await _fileRepository.GetByIdAsync(request.Avatar.Id) ?? throw new KeyNotFoundException("Photo not found") :
             null;
+        if (file != null && file.UploadedById != userId)
+        {
+            throw new ForbiddenException("Only owner can use self photos");
+        }
+
+        user.Avatar = file;
 
         await _userRepository.UpdateAsync(user);
     }
@@ -119,10 +127,14 @@ public class UserService : IUserService
         var admin = await _userRepository.GetByIdAsync(adminId) ?? throw new KeyNotFoundException("Admin not found");
         if (!admin.Roles.HasFlag(UserRole.Moderator) && !admin.Roles.HasFlag(UserRole.SuperAdmin))
         {
-            throw new UnauthorizedAccessException("No permission to block users");
+            throw new ForbiddenException("No permission to block users");
         }
 
         var targetUser = await _userRepository.GetByIdAsync(targetUserId) ?? throw new KeyNotFoundException("User not found");
+        if (targetUser.Roles.HasFlag(UserRole.Moderator) || targetUser.Roles.HasFlag(UserRole.SuperAdmin))
+        {
+            throw new InvalidOperationException("Can't block user with role Moderator or SuperAdmin");
+        }
 
         targetUser.IsBlocked = block;
         await _userRepository.UpdateAsync(targetUser);
@@ -195,27 +207,27 @@ public class UserService : IUserService
             .ToList();
     }
 
-    private static bool IsCurrentParticipation(MotorsportErp.Domain.Tournaments.TournamentApplication application)
+    private static bool IsCurrentParticipation(TournamentApplication application)
     {
         return application.Tournament != null &&
                application.Car != null &&
-               application.Status == MotorsportErp.Domain.Tournaments.TournamentApplicationStatus.Approved &&
-               application.Tournament.Status != MotorsportErp.Domain.Tournaments.TournamentStatus.Finished &&
-               application.Tournament.Status != MotorsportErp.Domain.Tournaments.TournamentStatus.Cancelled;
+               application.Status == TournamentApplicationStatus.Approved &&
+               application.Tournament.Status != TournamentStatus.Finished &&
+               application.Tournament.Status != TournamentStatus.Cancelled;
     }
 
-    private static bool IsHistoryParticipation(MotorsportErp.Domain.Tournaments.TournamentApplication application)
+    private static bool IsHistoryParticipation(TournamentApplication application)
     {
         return application.Tournament != null &&
                application.Car != null &&
-               application.Status == MotorsportErp.Domain.Tournaments.TournamentApplicationStatus.Approved &&
-               (application.Tournament.Status == MotorsportErp.Domain.Tournaments.TournamentStatus.Finished ||
-                application.Tournament.Status == MotorsportErp.Domain.Tournaments.TournamentStatus.Cancelled);
+               application.Status == TournamentApplicationStatus.Approved &&
+               (application.Tournament.Status == TournamentStatus.Finished ||
+                application.Tournament.Status == TournamentStatus.Cancelled);
     }
 
     private static UserTournamentEntryResponse MapTournamentEntry(
-        MotorsportErp.Domain.Tournaments.TournamentApplication application,
-        IReadOnlyDictionary<Guid, MotorsportErp.Domain.Tournaments.TournamentResult> resultLookup)
+        TournamentApplication application,
+        IReadOnlyDictionary<Guid, TournamentResult> resultLookup)
     {
         var result = resultLookup.GetValueOrDefault(application.TournamentId);
 

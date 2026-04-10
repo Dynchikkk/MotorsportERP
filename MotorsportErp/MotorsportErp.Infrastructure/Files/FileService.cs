@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using MotorsportErp.Application.Common.Exceptions;
 using MotorsportErp.Application.DTO.Files;
 using MotorsportErp.Application.Interfaces.Files;
 using MotorsportErp.Application.Interfaces.Repositories;
@@ -62,12 +63,17 @@ public class FileService : IFileService
         return new MediaFileDto { Id = mediaFile.Id, Url = mediaFile.SavedUrl };
     }
 
-    public async Task DeleteFileAsync(Guid fileId)
+    public async Task DeleteFileAsync(Guid fileId, Guid ownerId)
     {
         var file = await _fileRepository.GetByIdAsync(fileId);
         if (file == null)
         {
             return;
+        }
+
+        if (file.UploadedById != ownerId)
+        {
+            throw new ForbiddenException("Only owner can delete files");
         }
 
         //var fileName = Path.GetFileName(file.SavedUrl);

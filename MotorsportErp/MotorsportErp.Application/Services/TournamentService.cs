@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using MotorsportErp.Application.Common.Exceptions;
 using MotorsportErp.Application.Common.Settings;
 using MotorsportErp.Application.DTO.Common;
 using MotorsportErp.Application.DTO.Tournaments;
@@ -6,6 +7,7 @@ using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Application.Interfaces.Services;
 using MotorsportErp.Application.Mappers;
 using MotorsportErp.Domain.Tournaments;
+using MotorsportErp.Domain.Tracks;
 using MotorsportErp.Domain.Users;
 
 namespace MotorsportErp.Application.Services;
@@ -62,13 +64,13 @@ public class TournamentService : ITournamentService
         {
             if (user.RaceCount < _settings.MinRacesToBecomeOrganizer)
             {
-                throw new UnauthorizedAccessException($"You need at least {_settings.MinRacesToBecomeOrganizer} races to create a tournament.");
+                throw new ForbiddenException($"You need at least {_settings.MinRacesToBecomeOrganizer} races to create a tournament.");
             }
 
             user.Roles |= UserRole.Organizer;
         }
 
-        if (track.Status == MotorsportErp.Domain.Tracks.TrackStatus.Unofficial)
+        if (track.Status == TrackStatus.Unofficial)
         {
             throw new InvalidOperationException("Tournament can be created only on confirmed or official tracks.");
         }
@@ -118,7 +120,7 @@ public class TournamentService : ITournamentService
         var tournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new KeyNotFoundException("Tournament not found");
         if (!HasAccess(tournament, user))
         {
-            throw new UnauthorizedAccessException("No permission");
+            throw new ForbiddenException();
         }
 
         if (tournament.Status != TournamentStatus.RegistrationOpen)
@@ -136,15 +138,11 @@ public class TournamentService : ITournamentService
 
     public async Task CancelAsync(Guid userId, Guid tournamentId)
     {
-        var user = await _userRepository.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found");
-
-        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
-            ?? throw new KeyNotFoundException("Tournament not found");
-
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new KeyNotFoundException("Tournament not found");
         if (!HasAccess(tournament, user))
         {
-            throw new UnauthorizedAccessException("No permission");
+            throw new ForbiddenException();
         }
 
         if (tournament.Status == TournamentStatus.Finished)
@@ -159,28 +157,22 @@ public class TournamentService : ITournamentService
 
     public async Task ApplyAsync(Guid userId, Guid tournamentId, Guid carId)
     {
-        var user = await _userRepository.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found");
-
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
         if (user.IsBlocked)
         {
             throw new UnauthorizedAccessException("User is blocked");
         }
 
-        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
-            ?? throw new KeyNotFoundException("Tournament not found");
-
-        var car = await _carRepository.GetByIdAsync(carId)
-            ?? throw new KeyNotFoundException("Car not found");
-
+        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new KeyNotFoundException("Tournament not found");
         if (tournament.Status != TournamentStatus.RegistrationOpen)
         {
             throw new InvalidOperationException("Registration closed");
         }
 
+        var car = await _carRepository.GetByIdAsync(carId) ?? throw new KeyNotFoundException("Car not found");
         if (car.OwnerId != userId)
         {
-            throw new UnauthorizedAccessException("Not your car");
+            throw new ForbiddenException("Not your car");
         }
 
         if (car.CarClass != tournament.AllowedCarClass)
@@ -219,7 +211,7 @@ public class TournamentService : ITournamentService
 
         if (!HasAccess(tournament, user))
         {
-            throw new UnauthorizedAccessException("Only organizers can approve applications.");
+            throw new ForbiddenException("Only organizers can approve applications.");
         }
 
         if (application.Status != TournamentApplicationStatus.Pending)
@@ -243,7 +235,7 @@ public class TournamentService : ITournamentService
 
         if (!HasAccess(tournament, user))
         {
-            throw new UnauthorizedAccessException("No permission");
+            throw new ForbiddenException();
         }
 
         if (application.Status != TournamentApplicationStatus.Pending)
@@ -268,7 +260,7 @@ public class TournamentService : ITournamentService
 
         if (!HasAccess(tournament, user))
         {
-            throw new UnauthorizedAccessException("No permission");
+            throw new ForbiddenException();
         }
 
         if (tournament.Status != TournamentStatus.Confirmed)
@@ -293,7 +285,7 @@ public class TournamentService : ITournamentService
 
         if (!HasAccess(tournament, user))
         {
-            throw new UnauthorizedAccessException("No permission");
+            throw new ForbiddenException();
         }
 
         if (tournament.Status != TournamentStatus.Active)
@@ -327,7 +319,7 @@ public class TournamentService : ITournamentService
 
         if (!HasAccess(tournament, user))
         {
-            throw new UnauthorizedAccessException("No permission");
+            throw new ForbiddenException();
         }
 
         if (tournament.Status != TournamentStatus.Active)
@@ -394,9 +386,12 @@ public class TournamentService : ITournamentService
         var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
         var tournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new KeyNotFoundException("Tournament not found");
 
-        return !HasAccess(tournament, user)
-            ? throw new UnauthorizedAccessException("No permission")
-            : (IReadOnlyCollection<TournamentApplicationResponse>)tournament.Applications
+        if (!HasAccess(tournament, user))
+        {
+            throw new ForbiddenException();
+        }
+
+        return tournament.Applications
             .OrderBy(a => a.Status)
             .ThenBy(a => a.User.Nickname)
             .Select(TournamentMapper.ToApplicationResponse)
@@ -412,7 +407,7 @@ public class TournamentService : ITournamentService
 
         if (!isModerator)
         {
-            throw new UnauthorizedAccessException("Only moderators can delete tournaments");
+            throw new ForbiddenException("Only moderators can delete tournaments");
         }
 
         await _tournamentRepository.DeleteAsync(tournament);
@@ -425,7 +420,7 @@ public class TournamentService : ITournamentService
 
         if (!HasAccess(tournament, user))
         {
-            throw new UnauthorizedAccessException("No permission");
+            throw new ForbiddenException("No permission");
         }
 
         var newOrganizer = await _userRepository.GetByIdAsync(newOrganizerId) ?? throw new KeyNotFoundException("New organizer not found");
@@ -456,7 +451,7 @@ public class TournamentService : ITournamentService
         var application = await _applicationRepository.GetByIdAsync(applicationId) ?? throw new KeyNotFoundException("Application not found");
         if (application.UserId != userId)
         {
-            throw new UnauthorizedAccessException("You can only cancel your own applications");
+            throw new ForbiddenException("You can only cancel your own applications");
         }
 
         var tournament = await _tournamentRepository.GetByIdAsync(application.TournamentId) ?? throw new KeyNotFoundException("Tournament not found");
@@ -487,15 +482,20 @@ public class TournamentService : ITournamentService
 
         if (!HasAccess(tournament, user))
         {
-            throw new UnauthorizedAccessException("No permission");
+            throw new ForbiddenException("No permission");
         }
 
         if (tournament.Status != TournamentStatus.RegistrationOpen)
         {
-            throw new InvalidOperationException("Cannot update after registration");
+            throw new ForbiddenException("Cannot update after registration");
         }
 
         var photo = await _fileRepository.GetByIdAsync(photoId) ?? throw new KeyNotFoundException("Photo not found");
+        if (photo.UploadedById != userId)
+        {
+            throw new ForbiddenException("Only owner can use self photos");
+        }
+
         tournament.Photos.Add(photo);
         await _tournamentRepository.UpdateAsync(tournament);
     }
@@ -507,7 +507,7 @@ public class TournamentService : ITournamentService
 
         if (!HasAccess(tournament, user))
         {
-            throw new UnauthorizedAccessException("No permission");
+            throw new ForbiddenException("No permission");
         }
 
         if (tournament.Status != TournamentStatus.RegistrationOpen)

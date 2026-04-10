@@ -12,7 +12,6 @@ public class TrackDetailsResponse
     public TrackStatus Status { get; set; }
     public string Name { get; set; } = default!;
     public string Location { get; set; } = default!;
-    public string? LayoutImageUrl { get; set; }
     public List<MediaFileDto> Photos { get; set; } = [];
 
     public int VoteCount { get; set; }

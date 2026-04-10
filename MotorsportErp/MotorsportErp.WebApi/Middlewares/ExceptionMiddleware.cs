@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using MotorsportErp.Application.Common.Exceptions;
+using System.Net;
 using System.Text.Json;
 
 namespace MotorsportErp.WebApi.Middlewares;
@@ -29,6 +30,7 @@ public class ExceptionMiddleware
         var statusCode = exception switch
         {
             UnauthorizedAccessException => HttpStatusCode.Unauthorized,
+            ForbiddenException => HttpStatusCode.Forbidden,
             KeyNotFoundException => HttpStatusCode.NotFound,
             InvalidOperationException => HttpStatusCode.BadRequest,
             ArgumentException => HttpStatusCode.BadRequest,

@@ -6,7 +6,6 @@ public class TrackCreateRequest
 {
     public required string Name { get; set; }
     public required string Location { get; set; }
-    public string? LayoutImageUrl { get; set; }
 
     public TrackStatus? Status { get; set; }
 }

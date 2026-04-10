@@ -94,6 +94,7 @@ public class AuthService : IAuthService
         var newRefreshToken = _jwtProvider.GenerateRefreshToken();
 
         user.RefreshToken = newRefreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
         await _userRepository.UpdateAsync(user);
 
         return AuthMapper.ToResponse(newAccessToken, newRefreshToken);
