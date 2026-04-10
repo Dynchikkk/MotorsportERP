@@ -94,6 +94,8 @@ public class TournamentRepository : ITournamentRepository
     {
         return await _context.TournamentApplications
             .Where(a => a.TournamentId == tournamentId)
+            .Include(a => a.Car)
+            .Include(a => a.User)
             .ToListAsync();
     }
 
@@ -107,5 +109,40 @@ public class TournamentRepository : ITournamentRepository
     {
         return await _context.TournamentApplications
             .AnyAsync(a => a.TournamentId == tournamentId && a.UserId == userId);
+    }
+
+    public async Task ApproveApplicationAtomicallyAsync(Guid applicationId)
+    {
+        using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead);
+
+        try
+        {
+            var application = await _context.TournamentApplications.FindAsync(applicationId);
+            if (application == null || application.Status != TournamentApplicationStatus.Pending) return;
+
+            application.Status = TournamentApplicationStatus.Approved;
+            _context.TournamentApplications.Update(application);
+            await _context.SaveChangesAsync();
+
+            var tournament = await _context.Tournaments.FindAsync(application.TournamentId);
+            if (tournament != null && tournament.Status == TournamentStatus.RegistrationOpen)
+            {
+                var approvedCount = await _context.TournamentApplications
+                    .CountAsync(a => a.TournamentId == tournament.Id && a.Status == TournamentApplicationStatus.Approved);
+
+                if (approvedCount >= tournament.RequiredParticipants)
+                {
+                    tournament.Status = TournamentStatus.Confirmed;
+                    _context.Tournaments.Update(tournament);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 }

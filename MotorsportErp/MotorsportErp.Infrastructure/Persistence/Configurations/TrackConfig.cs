@@ -12,5 +12,7 @@ public class TrackConfig : IEntityTypeConfiguration<Track>
             .WithMany(u => u.CreatedTracks)
             .HasForeignKey(t => t.CreatedById)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasQueryFilter(e => !e.IsDeleted);
     }
 }

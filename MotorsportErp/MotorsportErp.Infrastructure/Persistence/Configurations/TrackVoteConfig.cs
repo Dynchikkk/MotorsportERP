@@ -8,7 +8,7 @@ public class TrackVoteConfig : IEntityTypeConfiguration<TrackVote>
 {
     public void Configure(EntityTypeBuilder<TrackVote> builder)
     {
-        _ = builder.HasIndex(v => new { v.UserId, v.TrackId }).IsUnique();
+        _ = builder.HasIndex(v => new { v.UserId, v.TrackId }).IsUnique().HasFilter("[IsDeleted] = 0"); ;
 
         _ = builder.HasOne(v => v.User)
             .WithMany(u => u.TrackVotes)
@@ -19,5 +19,7 @@ public class TrackVoteConfig : IEntityTypeConfiguration<TrackVote>
             .WithMany(t => t.Votes)
             .HasForeignKey(v => v.TrackId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasQueryFilter(e => !e.IsDeleted);
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using MotorsportErp.Application.DTO.Auth;
-using MotorsportErp.Application.DTO.Users; // Добавлено для UserResponse
+using MotorsportErp.Application.DTO.Users;
 using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Application.Interfaces.Security;
 using MotorsportErp.Application.Interfaces.Services;
@@ -97,5 +97,15 @@ public class AuthService : IAuthService
         await _userRepository.UpdateAsync(user);
 
         return AuthMapper.ToResponse(newAccessToken, newRefreshToken);
+    }
+
+    public async Task RevokeTokenAsync(Guid userId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+
+        user.RefreshToken = null;
+        user.RefreshTokenExpiryTime = null;
+
+        await _userRepository.UpdateAsync(user);
     }
 }

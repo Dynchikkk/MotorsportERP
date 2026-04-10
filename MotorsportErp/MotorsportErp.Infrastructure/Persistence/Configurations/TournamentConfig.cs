@@ -17,5 +17,7 @@ public class TournamentConfig : IEntityTypeConfiguration<Tournament>
             .WithMany(u => u.CreatedTournaments)
             .HasForeignKey(t => t.CreatorId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasQueryFilter(e => !e.IsDeleted);
     }
 }

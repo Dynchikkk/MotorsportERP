@@ -191,15 +191,7 @@ public class TournamentService : ITournamentService
             throw new InvalidOperationException("Application is not pending");
         }
 
-        application.Status = TournamentApplicationStatus.Approved;
-        await _applicationRepository.UpdateAsync(application);
-
-        var approvedCount = await _applicationRepository.GetApprovedCountAsync(tournament.Id);
-        if (approvedCount >= tournament.RequiredParticipants)
-        {
-            tournament.Status = TournamentStatus.Confirmed;
-            await _tournamentRepository.UpdateAsync(tournament);
-        }
+        await _tournamentRepository.ApproveApplicationAtomicallyAsync(applicationId);
     }
 
     public async Task RejectAsync(Guid userId, Guid applicationId)

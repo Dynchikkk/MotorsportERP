@@ -70,19 +70,19 @@ public class FileService : IFileService
             return;
         }
 
-        var fileName = Path.GetFileName(file.SavedUrl);
-        var physicalPath = Path.Combine(ResolveUploadPath(), fileName);
+        //var fileName = Path.GetFileName(file.SavedUrl);
+        //var physicalPath = Path.Combine(ResolveUploadPath(), fileName);
 
-        if (File.Exists(physicalPath))
-        {
-            try
-            {
-                File.Delete(physicalPath);
-            }
-            catch (IOException)
-            {
-            }
-        }
+        //if (File.Exists(physicalPath))
+        //{
+        //    try
+        //    {
+        //        File.Delete(physicalPath);
+        //    }
+        //    catch (IOException)
+        //    {
+        //    }
+        //}
 
         await _fileRepository.DeleteAsync(file);
     }

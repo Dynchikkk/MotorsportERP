@@ -8,7 +8,7 @@ public class TournamentOrganizerConfig : IEntityTypeConfiguration<TournamentOrga
 {
     public void Configure(EntityTypeBuilder<TournamentOrganizer> builder)
     {
-        _ = builder.HasIndex(o => new { o.TournamentId, o.UserId }).IsUnique();
+        _ = builder.HasIndex(o => new { o.TournamentId, o.UserId }).IsUnique().HasFilter("[IsDeleted] = 0");
 
         _ = builder.HasOne(o => o.Tournament)
             .WithMany(t => t.Organizers)
@@ -19,5 +19,7 @@ public class TournamentOrganizerConfig : IEntityTypeConfiguration<TournamentOrga
             .WithMany(u => u.OrganizedTournaments)
             .HasForeignKey(o => o.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasQueryFilter(e => !e.IsDeleted);
     }
 }

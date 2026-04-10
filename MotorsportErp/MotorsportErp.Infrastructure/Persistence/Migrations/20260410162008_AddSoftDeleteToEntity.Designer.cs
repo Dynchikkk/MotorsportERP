@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MotorsportErp.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using MotorsportErp.Infrastructure.Persistence;
 namespace MotorsportErp.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260410162008_AddSoftDeleteToEntity")]
+    partial class AddSoftDeleteToEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -232,8 +235,7 @@ namespace MotorsportErp.Infrastructure.Persistence.Migrations
                     b.HasIndex("TournamentId");
 
                     b.HasIndex("UserId", "TournamentId")
-                        .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
+                        .IsUnique();
 
                     b.ToTable("TournamentApplications");
                 });
@@ -264,8 +266,7 @@ namespace MotorsportErp.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.HasIndex("TournamentId", "UserId")
-                        .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
+                        .IsUnique();
 
                     b.ToTable("TournamentOrganizers");
                 });
@@ -302,8 +303,7 @@ namespace MotorsportErp.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.HasIndex("TournamentId", "UserId")
-                        .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
+                        .IsUnique();
 
                     b.ToTable("TournamentResults");
                 });
@@ -379,8 +379,7 @@ namespace MotorsportErp.Infrastructure.Persistence.Migrations
                     b.HasIndex("TrackId");
 
                     b.HasIndex("UserId", "TrackId")
-                        .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
+                        .IsUnique();
 
                     b.ToTable("TrackVotes");
                 });
@@ -441,8 +440,7 @@ namespace MotorsportErp.Infrastructure.Persistence.Migrations
                     b.HasIndex("AvatarId");
 
                     b.HasIndex("Email")
-                        .IsUnique()
-                        .HasFilter("[IsDeleted] = 0");
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });

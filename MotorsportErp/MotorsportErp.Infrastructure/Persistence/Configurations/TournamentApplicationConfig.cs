@@ -8,7 +8,7 @@ public class TournamentApplicationConfig : IEntityTypeConfiguration<TournamentAp
 {
     public void Configure(EntityTypeBuilder<TournamentApplication> builder)
     {
-        _ = builder.HasIndex(a => new { a.UserId, a.TournamentId }).IsUnique();
+        _ = builder.HasIndex(a => new { a.UserId, a.TournamentId }).IsUnique().HasFilter("[IsDeleted] = 0");
 
         _ = builder.HasOne(a => a.User)
             .WithMany(u => u.Applications)
@@ -24,5 +24,7 @@ public class TournamentApplicationConfig : IEntityTypeConfiguration<TournamentAp
             .WithMany(c => c.Applications)
             .HasForeignKey(a => a.CarId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasQueryFilter(e => !e.IsDeleted);
     }
 }

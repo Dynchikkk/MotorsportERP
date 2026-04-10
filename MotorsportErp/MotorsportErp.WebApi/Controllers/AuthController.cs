@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MotorsportErp.Application.DTO.Auth;
 using MotorsportErp.Application.DTO.Users;
 using MotorsportErp.Application.Interfaces.Services;
+using MotorsportErp.WebApi.Extensions;
 using System.Net.Mime;
 
 namespace MotorsportErp.WebApi.Controllers;
@@ -58,5 +59,18 @@ public class AuthController : ControllerBase
     {
         var response = await _authService.RefreshTokenAsync(request.AccessToken, request.RefreshToken);
         return Ok(response);
+    }
+
+    /// <summary>
+    /// Revokes the refresh token for the current user (Logout).
+    /// </summary>
+    [HttpPost("logout")]
+    [Authorize] // Требует авторизации
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Logout()
+    {
+        var userId = User.GetUserId();
+        await _authService.RevokeTokenAsync(userId);
+        return NoContent();
     }
 }

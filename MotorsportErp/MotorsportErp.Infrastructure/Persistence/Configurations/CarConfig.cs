@@ -12,5 +12,7 @@ public class CarConfig : IEntityTypeConfiguration<Car>
             .WithMany(u => u.Cars)
             .HasForeignKey(c => c.OwnerId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasQueryFilter(e => !e.IsDeleted);
     }
 }

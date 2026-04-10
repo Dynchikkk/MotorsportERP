@@ -38,6 +38,7 @@ public class AppDbContext : DbContext
         _ = modelBuilder.ApplyConfiguration(new TournamentApplicationConfig());
         _ = modelBuilder.ApplyConfiguration(new TournamentResultConfig());
         _ = modelBuilder.ApplyConfiguration(new TournamentOrganizerConfig());
+        _ = modelBuilder.ApplyConfiguration(new MediaFileConfig());
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -50,9 +51,17 @@ public class AppDbContext : DbContext
 
         foreach (var entityEntry in entries)
         {
-            if (entityEntry.State == EntityState.Modified)
+            switch (entityEntry.State)
             {
-                ((GuidEntity)entityEntry.Entity).UpdatedAt = DateTime.UtcNow;
+                case EntityState.Modified:
+                    ((GuidEntity)entityEntry.Entity).UpdatedAt = DateTime.UtcNow;
+                    break;
+
+                case EntityState.Deleted:
+                    entityEntry.State = EntityState.Modified;
+                    ((GuidEntity)entityEntry.Entity).IsDeleted = true;
+                    ((GuidEntity)entityEntry.Entity).UpdatedAt = DateTime.UtcNow;
+                    break;
             }
         }
 

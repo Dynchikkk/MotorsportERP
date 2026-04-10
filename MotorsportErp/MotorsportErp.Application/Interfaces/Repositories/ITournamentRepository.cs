@@ -14,5 +14,7 @@ public interface ITournamentRepository : IBaseRepository<Tournament>, IPagedRepo
 
     Task AddResultAsync(TournamentResult result);
 
+    Task ApproveApplicationAtomicallyAsync(Guid applicationId);
+
     Task<bool> HasUserAppliedAsync(Guid tournamentId, Guid userId);
 }

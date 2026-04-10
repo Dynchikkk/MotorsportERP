@@ -8,7 +8,7 @@ public class UserConfig : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        _ = builder.HasIndex(u => u.Email).IsUnique();
+        _ = builder.HasIndex(u => u.Email).IsUnique().HasFilter("[IsDeleted] = 0"); ;
 
         _ = builder.Property(u => u.Bio).HasMaxLength(1000).IsRequired(false);
         _ = builder.Property(u => u.IsBlocked).HasDefaultValue(false);
@@ -17,5 +17,7 @@ public class UserConfig : IEntityTypeConfiguration<User>
            .WithMany()
            .HasForeignKey(u => u.AvatarId)
            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasQueryFilter(e => !e.IsDeleted);
     }
 }
