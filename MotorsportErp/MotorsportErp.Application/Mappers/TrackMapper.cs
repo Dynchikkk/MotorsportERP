@@ -12,9 +12,9 @@ public static class TrackMapper
             Id = track.Id,
             Name = track.Name,
             Location = track.Location,
-            LayoutImageUrl = track.LayoutImageUrl,
             Status = track.Status,
-            VoteCount = track.VoteCount
+            VoteCount = track.VoteCount,
+            Photos = MediaFileMapper.ToResponseList(track.Photos)
         };
     }
 
@@ -25,16 +25,11 @@ public static class TrackMapper
             Id = track.Id,
             Name = track.Name,
             Location = track.Location,
-            LayoutImageUrl = track.LayoutImageUrl,
             Status = track.Status,
             VoteCount = track.VoteCount,
-            ConfirmationThreshold = track.ConfirmationThreshold
+            ConfirmationThreshold = track.ConfirmationThreshold,
+            Photos = MediaFileMapper.ToResponseList(track.Photos)
         };
-    }
-
-    public static IEnumerable<TrackResponse> ToResponseList(IEnumerable<Track> tracks)
-    {
-        return tracks.Select(ToResponse);
     }
 
     public static Track ToEntity(TrackCreateRequest request, Guid creatorId)

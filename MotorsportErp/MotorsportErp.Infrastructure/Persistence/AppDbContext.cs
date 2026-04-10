@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MotorsportErp.Domain.BaseEntities;
 using MotorsportErp.Domain.Cars;
+using MotorsportErp.Domain.Files;
 using MotorsportErp.Domain.Tournaments;
 using MotorsportErp.Domain.Tracks;
 using MotorsportErp.Domain.Users;
@@ -18,6 +19,7 @@ public class AppDbContext : DbContext
     public DbSet<TournamentApplication> TournamentApplications => Set<TournamentApplication>();
     public DbSet<TournamentResult> TournamentResults => Set<TournamentResult>();
     public DbSet<TournamentOrganizer> TournamentOrganizers => Set<TournamentOrganizer>();
+    public DbSet<MediaFile> MediaFiles => Set<MediaFile>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)

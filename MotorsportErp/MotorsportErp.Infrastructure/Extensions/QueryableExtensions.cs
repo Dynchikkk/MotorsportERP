@@ -16,10 +16,8 @@ public static class QueryableExtensions
         page = Math.Max(page, MIN_PAGE);
         pageSize = Math.Min(Math.Max(pageSize, MIN_PAGE_SIZE), MAX_PAGE_SIZE);
 
-        // Считаем общее количество до применения Skip/Take
         var totalCount = await query.CountAsync();
 
-        // Получаем нужную страницу
         var items = await query
             .Skip(page * pageSize)
             .Take(pageSize)

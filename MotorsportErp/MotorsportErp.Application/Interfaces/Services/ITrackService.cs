@@ -3,7 +3,7 @@ using MotorsportErp.Application.DTO.Tracks;
 
 namespace MotorsportErp.Application.Interfaces.Services;
 
-public interface ITrackService
+public interface ITrackService : IPhotoService
 {
     Task<PagedResponse<TrackResponse>> GetAllAsync(int page = 0, int pageSize = 20);
     Task<TrackDetailsResponse> GetByIdAsync(Guid id);

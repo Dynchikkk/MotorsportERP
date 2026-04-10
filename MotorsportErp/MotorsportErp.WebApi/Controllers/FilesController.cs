@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MotorsportErp.Application.Interfaces.Files;
+using MotorsportErp.WebApi.Extensions;
 
 namespace MotorsportErp.WebApi.Controllers;
 
@@ -8,36 +10,33 @@ namespace MotorsportErp.WebApi.Controllers;
 [Authorize]
 public class FilesController : ControllerBase
 {
-    private readonly IWebHostEnvironment _env;
+    private readonly IFileService _fileService;
 
-    public FilesController(IWebHostEnvironment env)
+    public FilesController(IFileService fileService)
     {
-        _env = env;
+        _fileService = fileService;
     }
 
     [HttpPost("upload")]
+    [RequestSizeLimit(5 * 1024 * 1024)]
     public async Task<IActionResult> UploadImage(IFormFile file)
     {
         if (file == null || file.Length == 0)
-            return BadRequest("File is empty");
-
-        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (!allowedExtensions.Contains(ext))
-            return BadRequest("Invalid file extension");
-
-        var uploadsFolder = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads");
-        if (!Directory.Exists(uploadsFolder))
-            Directory.CreateDirectory(uploadsFolder);
-
-        var uniqueFileName = Guid.NewGuid().ToString() + ext;
-        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-        using (var stream = new FileStream(filePath, FileMode.Create))
         {
-            await file.CopyToAsync(stream);
+            return BadRequest("File is empty");
         }
 
-        return Ok(new { url = $"/uploads/{uniqueFileName}" });
+        var userId = User.GetUserId();
+        using var stream = file.OpenReadStream();
+        var result = await _fileService.UploadImageAsync(stream, file.FileName, userId);
+
+        return Created(result.Url, result);
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await _fileService.DeleteFileAsync(id);
+        return NoContent();
     }
 }

@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using MotorsportErp.Application.Common.Settings;
-using MotorsportErp.Infrastructure.Auth;
+using MotorsportErp.Infrastructure.Files;
 using MotorsportErp.Infrastructure.Persistence;
 using MotorsportErp.Infrastructure.Persistence.Settings;
+using MotorsportErp.Infrastructure.Security;
 using MotorsportErp.WebApi.Extensions;
 using MotorsportErp.WebApi.Middlewares;
 
@@ -13,6 +14,7 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSet
 builder.Services.Configure<TrackSettings>(builder.Configuration.GetSection("TrackSettings"));
 builder.Services.Configure<TournamentSettings>(builder.Configuration.GetSection("TournamentSettings"));
 builder.Services.Configure<SeedSettings>(builder.Configuration.GetSection("SeedSettings"));
+builder.Services.Configure<FileStorageSettings>(builder.Configuration.GetSection("FileStorageSettings"));
 
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -20,7 +22,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         sqlOptions =>
         {
-            sqlOptions.EnableRetryOnFailure(
+            _ = sqlOptions.EnableRetryOnFailure(
                 maxRetryCount: 5,
                 maxRetryDelay: TimeSpan.FromSeconds(10),
                 errorNumbersToAdd: null);
@@ -97,7 +99,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseMiddleware<ExceptionMiddleware>();
-app.UseStaticFiles();
+
+app.UseFileStorage(builder.Configuration);
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
@@ -108,3 +111,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

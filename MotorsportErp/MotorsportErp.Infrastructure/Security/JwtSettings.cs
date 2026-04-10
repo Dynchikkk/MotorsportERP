@@ -1,4 +1,4 @@
-﻿namespace MotorsportErp.Infrastructure.Auth;
+﻿namespace MotorsportErp.Infrastructure.Security;
 
 public class JwtSettings
 {

@@ -16,6 +16,8 @@ public class TournamentService : ITournamentService
     private readonly IUserRepository _userRepository;
     private readonly ICarRepository _carRepository;
     private readonly ITournamentApplicationRepository _applicationRepository;
+    private readonly IFileRepository _fileRepository;
+
     private readonly TournamentSettings _settings;
 
     public TournamentService(
@@ -23,13 +25,15 @@ public class TournamentService : ITournamentService
         IUserRepository userRepository,
         ICarRepository carRepository,
         ITournamentApplicationRepository applicationRepository,
-        IOptions<TournamentSettings> options)
+        IOptions<TournamentSettings> options,
+        IFileRepository fileRepository)
     {
         _tournamentRepository = tournamentRepository;
         _userRepository = userRepository;
         _carRepository = carRepository;
         _applicationRepository = applicationRepository;
         _settings = options.Value;
+        _fileRepository = fileRepository;
     }
 
     public async Task<Guid> CreateAsync(Guid userId, TournamentCreateRequest request)
@@ -80,12 +84,8 @@ public class TournamentService : ITournamentService
 
     public async Task UpdateAsync(Guid userId, Guid tournamentId, TournamentUpdateRequest request)
     {
-        var user = await _userRepository.GetByIdAsync(userId)
-            ?? throw new KeyNotFoundException("User not found");
-
-        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
-            ?? throw new KeyNotFoundException("Tournament not found");
-
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        var tournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new KeyNotFoundException("Tournament not found");
         if (!HasAccess(tournament, user))
         {
             throw new UnauthorizedAccessException("No permission");
@@ -192,15 +192,14 @@ public class TournamentService : ITournamentService
         }
 
         application.Status = TournamentApplicationStatus.Approved;
-        var approvedCount = await _applicationRepository.GetApprovedCountAsync(tournament.Id);
+        await _applicationRepository.UpdateAsync(application);
 
+        var approvedCount = await _applicationRepository.GetApprovedCountAsync(tournament.Id);
         if (approvedCount >= tournament.RequiredParticipants)
         {
             tournament.Status = TournamentStatus.Confirmed;
             await _tournamentRepository.UpdateAsync(tournament);
         }
-
-        await _applicationRepository.UpdateAsync(application);
     }
 
     public async Task RejectAsync(Guid userId, Guid applicationId)
@@ -408,6 +407,49 @@ public class TournamentService : ITournamentService
                 tournament.Status = TournamentStatus.RegistrationOpen;
                 await _tournamentRepository.UpdateAsync(tournament);
             }
+        }
+    }
+
+    public async Task AddPhotoAsync(Guid userId, Guid targetEntityId, Guid photoId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        var tournament = await _tournamentRepository.GetByIdAsync(targetEntityId) ?? throw new KeyNotFoundException("Tournament not found");
+
+        if (!HasAccess(tournament, user))
+        {
+            throw new UnauthorizedAccessException("No permission");
+        }
+
+        if (tournament.Status != TournamentStatus.RegistrationOpen)
+        {
+            throw new InvalidOperationException("Cannot update after registration");
+        }
+
+        var photo = await _fileRepository.GetByIdAsync(photoId) ?? throw new KeyNotFoundException("Photo not found");
+        tournament.Photos.Add(photo);
+        await _tournamentRepository.UpdateAsync(tournament);
+    }
+
+    public async Task RemovePhotoAsync(Guid userId, Guid targetEntityId, Guid photoId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        var tournament = await _tournamentRepository.GetByIdAsync(targetEntityId) ?? throw new KeyNotFoundException("Tournament not found");
+
+        if (!HasAccess(tournament, user))
+        {
+            throw new UnauthorizedAccessException("No permission");
+        }
+
+        if (tournament.Status != TournamentStatus.RegistrationOpen)
+        {
+            throw new InvalidOperationException("Cannot update after registration");
+        }
+
+        var photo = await _fileRepository.GetByIdAsync(photoId) ?? throw new KeyNotFoundException("Photo not found");
+        if (photo != null)
+        {
+            _ = tournament.Photos.Remove(photo);
+            await _tournamentRepository.UpdateAsync(tournament);
         }
     }
 

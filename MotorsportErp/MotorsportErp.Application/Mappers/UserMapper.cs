@@ -17,7 +17,8 @@ public static class UserMapper
             Id = user.Id,
             Nickname = user.Nickname,
             Bio = user.Bio,
-            RaceCount = user.RaceCount
+            RaceCount = user.RaceCount,
+            Avatar = user.Avatar != null ? MediaFileMapper.ToResponse(user.Avatar) : null
         };
     }
 
@@ -39,7 +40,9 @@ public static class UserMapper
             IsBlocked = user.IsBlocked,
 
             CarsCount = user.Cars?.Count ?? 0,
-            TournamentsCount = user.Applications?.Count ?? 0
+            TournamentsCount = user.Applications?.Count ?? 0,
+
+            Avatar = user.Avatar != null ? MediaFileMapper.ToResponse(user.Avatar) : null
         };
     }
 
@@ -69,7 +72,8 @@ public static class UserMapper
             Email = user.Email,
             Roles = user.Roles,
             IsBlocked = user.IsBlocked,
-            RaceCount = user.RaceCount
+            RaceCount = user.RaceCount,
+            Avatar = user.Avatar != null ? MediaFileMapper.ToResponse(user.Avatar) : null
         };
     }
 }

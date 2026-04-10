@@ -15,16 +15,20 @@ public class TrackService : ITrackService
 {
     private readonly ITrackRepository _trackRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IFileRepository _fileRepository;
+
     private readonly TrackSettings _settings;
 
     public TrackService(
         ITrackRepository trackRepository,
         IUserRepository userRepository,
-        IOptions<TrackSettings> options)
+        IOptions<TrackSettings> options,
+        IFileRepository fileRepository)
     {
         _trackRepository = trackRepository;
         _userRepository = userRepository;
         _settings = options.Value;
+        _fileRepository = fileRepository;
     }
 
     public async Task<PagedResponse<TrackResponse>> GetAllAsync(int page = 0, int pageSize = 20)
@@ -56,6 +60,7 @@ public class TrackService : ITrackService
         }
 
         Track track = TrackMapper.ToEntity(request, userId);
+        track.Status = TrackStatus.Unofficial;
         track.ConfirmationThreshold = _settings.DefaultConfirmationThreshold;
 
         if (isModerator && request.Status.HasValue)
@@ -194,5 +199,52 @@ public class TrackService : ITrackService
         track.Status = TrackStatus.Official;
 
         await _trackRepository.UpdateAsync(track);
+    }
+
+    public async Task AddPhotoAsync(Guid userId, Guid targetEntityId, Guid photoId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        if (user.IsBlocked)
+        {
+            throw new UnauthorizedAccessException("User is blocked");
+        }
+
+        var track = await _trackRepository.GetByIdAsync(targetEntityId) ?? throw new KeyNotFoundException("Track not found");
+
+        bool isOwner = track.CreatedById == userId;
+        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
+        if (!isOwner && !isModerator)
+        {
+            throw new UnauthorizedAccessException("You cannot edit this track");
+        }
+
+        var photo = await _fileRepository.GetByIdAsync(photoId) ?? throw new KeyNotFoundException("Photo not found");
+        track.Photos.Add(photo);
+        await _trackRepository.UpdateAsync(track);
+    }
+
+    public async Task RemovePhotoAsync(Guid userId, Guid targetEntityId, Guid photoId)
+    {
+        var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
+        if (user.IsBlocked)
+        {
+            throw new UnauthorizedAccessException("User is blocked");
+        }
+
+        var track = await _trackRepository.GetByIdAsync(targetEntityId) ?? throw new KeyNotFoundException("Track not found");
+
+        bool isOwner = track.CreatedById == userId;
+        bool isModerator = user.Roles.HasFlag(UserRole.Moderator) || user.Roles.HasFlag(UserRole.SuperAdmin);
+        if (!isOwner && !isModerator)
+        {
+            throw new UnauthorizedAccessException("You cannot edit this track");
+        }
+
+        var photo = await _fileRepository.GetByIdAsync(photoId);
+        if (photo != null)
+        {
+            _ = track.Photos.Remove(photo);
+            await _trackRepository.UpdateAsync(track);
+        }
     }
 }

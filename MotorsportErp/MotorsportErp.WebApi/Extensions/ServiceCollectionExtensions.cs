@@ -1,10 +1,12 @@
-﻿using MotorsportErp.Application.Interfaces.Repositories;
+﻿using MotorsportErp.Application.Interfaces.Files;
+using MotorsportErp.Application.Interfaces.Repositories;
 using MotorsportErp.Application.Interfaces.Security;
 using MotorsportErp.Application.Interfaces.Services;
 using MotorsportErp.Application.Services;
-using MotorsportErp.Infrastructure.Auth;
+using MotorsportErp.Infrastructure.Files;
 using MotorsportErp.Infrastructure.Persistence;
 using MotorsportErp.Infrastructure.Repositories;
+using MotorsportErp.Infrastructure.Security;
 
 namespace MotorsportErp.WebApi.Extensions;
 
@@ -28,9 +30,12 @@ public static class ServiceCollectionExtensions
         _ = services.AddScoped<ITrackRepository, TrackRepository>();
         _ = services.AddScoped<ITournamentRepository, TournamentRepository>();
         _ = services.AddScoped<ITournamentApplicationRepository, TournamentApplicationRepository>();
+        _ = services.AddScoped<IFileRepository, FileRepository>();
 
         _ = services.AddScoped<IJwtProvider, JwtProvider>();
         _ = services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+        _ = services.AddScoped<IFileService, FileService>();
 
         _ = services.AddScoped<DbInitializer>();
 

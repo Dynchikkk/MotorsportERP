@@ -22,6 +22,7 @@ public class CarRepository : ICarRepository
         return await _context.Cars
             .Include(c => c.Applications)
                 .ThenInclude(a => a.Tournament)
+            .Include(c => c.Photos)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
@@ -30,7 +31,9 @@ public class CarRepository : ICarRepository
         int page,
         int pageSize)
     {
-        var query = _context.Cars.AsQueryable();
+        var query = _context.Cars
+            .Include(c => c.Photos)
+            .AsQueryable();
 
         if (filter != null)
         {

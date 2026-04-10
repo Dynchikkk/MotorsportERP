@@ -14,11 +14,11 @@ namespace MotorsportErp.WebApi.Controllers;
 [Produces(MediaTypeNames.Application.Json)]
 public class TracksController : ControllerBase
 {
-    private readonly ITrackService _service;
+    private readonly ITrackService trackService;
 
-    public TracksController(ITrackService service)
+    public TracksController(ITrackService trackService)
     {
-        _service = service;
+        this.trackService = trackService;
     }
 
     /// <summary>
@@ -31,7 +31,7 @@ public class TracksController : ControllerBase
         [FromQuery] int page = 0,
         [FromQuery] int pageSize = 20)
     {
-        var result = await _service.GetAllAsync(page, pageSize);
+        var result = await trackService.GetAllAsync(page, pageSize);
         return Ok(result);
     }
 
@@ -43,7 +43,7 @@ public class TracksController : ControllerBase
     [ProducesResponseType(typeof(TrackDetailsResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<TrackDetailsResponse>> GetById(Guid id)
     {
-        var result = await _service.GetByIdAsync(id);
+        var result = await trackService.GetByIdAsync(id);
         return Ok(result);
     }
 
@@ -55,7 +55,7 @@ public class TracksController : ControllerBase
     public async Task<ActionResult<Guid>> Create([FromBody] TrackCreateRequest request)
     {
         var userId = User.GetUserId();
-        var id = await _service.CreateAsync(userId, request);
+        var id = await trackService.CreateAsync(userId, request);
 
         return StatusCode(StatusCodes.Status201Created, id);
     }
@@ -68,7 +68,7 @@ public class TracksController : ControllerBase
     public async Task<IActionResult> Vote(Guid id, [FromQuery] bool isPositive)
     {
         var userId = User.GetUserId();
-        await _service.VoteAsync(userId, id, isPositive);
+        await trackService.VoteAsync(userId, id, isPositive);
 
         return NoContent();
     }
@@ -81,7 +81,7 @@ public class TracksController : ControllerBase
     public async Task<IActionResult> Update(Guid id, [FromBody] TrackUpdateRequest request)
     {
         var userId = User.GetUserId();
-        await _service.UpdateAsync(userId, id, request);
+        await trackService.UpdateAsync(userId, id, request);
 
         return NoContent();
     }
@@ -94,7 +94,7 @@ public class TracksController : ControllerBase
     public async Task<IActionResult> Confirm(Guid id)
     {
         var userId = User.GetUserId();
-        await _service.ConfirmAsync(userId, id);
+        await trackService.ConfirmAsync(userId, id);
 
         return NoContent();
     }
@@ -107,7 +107,7 @@ public class TracksController : ControllerBase
     public async Task<IActionResult> MakeOfficial(Guid id)
     {
         var userId = User.GetUserId();
-        await _service.MakeOfficialAsync(userId, id);
+        await trackService.MakeOfficialAsync(userId, id);
 
         return NoContent();
     }
@@ -120,8 +120,29 @@ public class TracksController : ControllerBase
     public async Task<IActionResult> Delete(Guid id)
     {
         var userId = User.GetUserId();
-        await _service.DeleteAsync(userId, id);
+        await trackService.DeleteAsync(userId, id);
 
+        return NoContent();
+    }
+
+    /// Add photo to gallery
+    /// </summary>
+    [HttpPost("{id}/photos/{photoId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> AddPhoto(Guid id, Guid photoId)
+    {
+        await trackService.AddPhotoAsync(User.GetUserId(), id, photoId);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Remove photo from gallery
+    /// </summary>
+    [HttpDelete("{id}/photos/{photoId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> RemovePhoto(Guid id, Guid photoId)
+    {
+        await trackService.RemovePhotoAsync(User.GetUserId(), id, photoId);
         return NoContent();
     }
 }

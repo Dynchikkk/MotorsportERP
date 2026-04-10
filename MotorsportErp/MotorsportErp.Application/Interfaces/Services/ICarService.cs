@@ -3,7 +3,7 @@ using MotorsportErp.Application.DTO.Common;
 
 namespace MotorsportErp.Application.Interfaces.Services;
 
-public interface ICarService
+public interface ICarService : IPhotoService
 {
     Task<PagedResponse<CarResponse>> GetUserCarsAsync(Guid userId, int page = 0, int pageSize = 20);
 

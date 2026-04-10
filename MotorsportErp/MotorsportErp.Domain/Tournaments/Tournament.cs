@@ -1,5 +1,6 @@
 ﻿using MotorsportErp.Domain.BaseEntities;
 using MotorsportErp.Domain.Cars;
+using MotorsportErp.Domain.Files;
 using MotorsportErp.Domain.Tracks;
 using MotorsportErp.Domain.Users;
 
@@ -17,6 +18,8 @@ public class Tournament : GuidEntity
     public CarClass AllowedCarClass { get; set; }
     public int RequiredRaceCount { get; set; }
     public int RequiredParticipants { get; set; }
+
+    public ICollection<MediaFile> Photos { get; set; } = [];
 
     // Navigation
 

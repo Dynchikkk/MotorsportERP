@@ -1,4 +1,5 @@
 ﻿using MotorsportErp.Domain.BaseEntities;
+using MotorsportErp.Domain.Files;
 using MotorsportErp.Domain.Tournaments;
 using MotorsportErp.Domain.Users;
 
@@ -12,6 +13,8 @@ public class Car : GuidEntity
     public required string Model { get; set; }
     public int Year { get; set; }
     public string? Description { get; set; }
+
+    public ICollection<MediaFile> Photos { get; set; } = [];
 
     // Navigation
 

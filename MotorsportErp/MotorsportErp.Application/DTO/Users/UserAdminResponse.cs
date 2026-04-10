@@ -1,4 +1,5 @@
-﻿using MotorsportErp.Domain.Users;
+﻿using MotorsportErp.Application.DTO.Files;
+using MotorsportErp.Domain.Users;
 
 namespace MotorsportErp.Application.DTO.Users;
 
@@ -10,4 +11,5 @@ public class UserAdminResponse
     public UserRole Roles { get; set; }
     public bool IsBlocked { get; set; }
     public int RaceCount { get; set; }
+    public MediaFileDto? Avatar { get; set; }
 }

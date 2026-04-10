@@ -1,5 +1,6 @@
 ﻿using MotorsportErp.Domain.BaseEntities;
 using MotorsportErp.Domain.Cars;
+using MotorsportErp.Domain.Files;
 using MotorsportErp.Domain.Tournaments;
 using MotorsportErp.Domain.Tracks;
 
@@ -19,6 +20,9 @@ public class User : GuidEntity
 
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }
+
+    public Guid? AvatarId { get; set; }
+    public MediaFile? Avatar { get; set; }
 
     // Navigation
 

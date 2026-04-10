@@ -1,4 +1,5 @@
-﻿using MotorsportErp.Domain.Tracks;
+﻿using MotorsportErp.Application.DTO.Files;
+using MotorsportErp.Domain.Tracks;
 
 namespace MotorsportErp.Application.DTO.Tracks;
 
@@ -9,7 +10,7 @@ public class TrackResponse
     public TrackStatus Status { get; set; }
     public string Name { get; set; } = default!;
     public string Location { get; set; } = default!;
-    public string? LayoutImageUrl { get; set; }
+    public List<MediaFileDto> Photos { get; set; } = [];
 
     public int VoteCount { get; set; }
 }

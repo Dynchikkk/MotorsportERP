@@ -1,4 +1,5 @@
-﻿using MotorsportErp.Domain.Tournaments;
+﻿using MotorsportErp.Application.DTO.Files;
+using MotorsportErp.Domain.Tournaments;
 
 namespace MotorsportErp.Application.DTO.Tournaments;
 
@@ -15,4 +16,6 @@ public class TournamentDetailsResponse
 
     public int ParticipantsCount { get; set; }
     public int RequiredParticipants { get; set; }
+
+    public List<MediaFileDto> Photos { get; set; } = [];
 }

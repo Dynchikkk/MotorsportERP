@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using MotorsportErp.Domain.Users;
-using MotorsportErp.Infrastructure.Auth;
+using MotorsportErp.Infrastructure.Security;
 using System.Text;
 
 namespace MotorsportErp.WebApi.Extensions;

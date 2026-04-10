@@ -1,5 +1,4 @@
-﻿
-using MotorsportErp.Application.DTO.Tournaments;
+﻿using MotorsportErp.Application.DTO.Tournaments;
 using MotorsportErp.Domain.Tournaments;
 
 namespace MotorsportErp.Application.Mappers;
@@ -15,7 +14,8 @@ public static class TournamentMapper
             StartDate = tournament.StartDate,
             EndDate = tournament.EndDate,
             TrackId = tournament.TrackId,
-            ParticipantsCount = tournament.Applications.Count
+            ParticipantsCount = tournament.Applications.Count,
+            Photos = MediaFileMapper.ToResponseList(tournament.Photos)
         };
     }
 
@@ -31,7 +31,8 @@ public static class TournamentMapper
             TrackId = tournament.TrackId,
             Description = tournament.Description,
             ParticipantsCount = tournament.Applications.Count,
-            RequiredParticipants = tournament.RequiredParticipants
+            RequiredParticipants = tournament.RequiredParticipants,
+            Photos = MediaFileMapper.ToResponseList(tournament.Photos)
         };
     }
 
@@ -55,13 +56,5 @@ public static class TournamentMapper
             RequiredRaceCount = request.RequiredRaceCount,
             CreatorId = creatorId
         };
-    }
-
-    public static void Update(Tournament tournament, TournamentUpdateRequest request)
-    {
-        tournament.Description = request.Description;
-        tournament.StartDate = request.StartDate;
-        tournament.EndDate = request.EndDate;
-        tournament.RequiredParticipants = request.RequiredParticipants;
     }
 }

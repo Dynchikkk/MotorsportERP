@@ -1,6 +1,6 @@
 # == Build ==
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+WORKDIR /src
 
 # Copy solution file
 COPY MotorsportErp/MotorsportErp.sln .
@@ -17,12 +17,18 @@ RUN dotnet restore
 COPY MotorsportErp/ ./
 RUN dotnet publish MotorsportErp.WebApi -c Release -o /out
 
+
 # == Runtime ==
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
-COPY --from=build /out .
+COPY --chown=app:app --from=build /out .
+
+# Create storage folder
+ARG UPLOAD_PATH=/app/wwwroot/uploads
+USER root
+RUN mkdir -p ${UPLOAD_PATH} && chown -R app:app /app/wwwroot
+USER app
 
 EXPOSE 8080
-
 ENTRYPOINT ["dotnet", "MotorsportErp.WebApi.dll"]

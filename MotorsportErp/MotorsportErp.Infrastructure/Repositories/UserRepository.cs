@@ -22,6 +22,7 @@ public class UserRepository : IUserRepository
             .Include(u => u.Cars)
             .Include(u => u.Applications)
             .Include(u => u.Results)
+            .Include(u => u.Avatar)
             .FirstOrDefaultAsync(u => u.Id == id);
     }
 
@@ -30,7 +31,9 @@ public class UserRepository : IUserRepository
             int page,
             int pageSize)
     {
-        var query = _context.Users.AsQueryable();
+        var query = _context.Users
+            .Include(u => u.Avatar)
+            .AsQueryable();
 
         if (filter != null)
         {
@@ -42,7 +45,12 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByEmailAsync(string email)
     {
-        return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        return await _context.Users
+            .Include(u => u.Cars)
+            .Include(u => u.Applications)
+            .Include(u => u.Results)
+            .Include(u => u.Avatar)
+            .FirstOrDefaultAsync(u => u.Email == email);
     }
 
     public async Task<bool> ExistsByEmailAsync(string email)

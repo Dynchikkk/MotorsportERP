@@ -207,4 +207,26 @@ public class TournamentsController : ControllerBase
         await _tournamentService.ApplyAsync(userId, id, request.CarId);
         return NoContent();
     }
+
+    /// <summary>
+    /// Add photo to gallery
+    /// </summary>
+    [HttpPost("{id}/photos/{photoId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> AddPhoto(Guid id, Guid photoId)
+    {
+        await _tournamentService.AddPhotoAsync(User.GetUserId(), id, photoId);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Remove photo from gallery
+    /// </summary>
+    [HttpDelete("{id}/photos/{photoId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> RemovePhoto(Guid id, Guid photoId)
+    {
+        await _tournamentService.RemovePhotoAsync(User.GetUserId(), id, photoId);
+        return NoContent();
+    }
 }

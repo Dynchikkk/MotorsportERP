@@ -11,10 +11,12 @@ namespace MotorsportErp.Application.Services;
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
+    private readonly IFileRepository _fileRepository;
 
-    public UserService(IUserRepository userRepository)
+    public UserService(IUserRepository userRepository, IFileRepository fileRepository)
     {
         _userRepository = userRepository;
+        _fileRepository = fileRepository;
     }
 
     public async Task<UserResponse> GetByIdAsync(Guid id)
@@ -99,6 +101,9 @@ public class UserService : IUserService
 
         user.Nickname = request.Nickname;
         user.Bio = request.Bio;
+        user.Avatar = request.Avatar != null ?
+            await _fileRepository.GetByIdAsync(request.Avatar.Id) :
+            null;
 
         await _userRepository.UpdateAsync(user);
     }

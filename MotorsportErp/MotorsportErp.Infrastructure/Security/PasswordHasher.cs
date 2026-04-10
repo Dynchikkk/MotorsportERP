@@ -1,7 +1,7 @@
 ﻿using MotorsportErp.Application.Interfaces.Security;
 using System.Security.Cryptography;
 
-namespace MotorsportErp.Infrastructure.Auth;
+namespace MotorsportErp.Infrastructure.Security;
 
 public class PasswordHasher : IPasswordHasher
 {

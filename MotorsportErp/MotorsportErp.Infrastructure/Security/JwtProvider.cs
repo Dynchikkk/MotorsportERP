@@ -7,7 +7,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace MotorsportErp.Infrastructure.Auth;
+namespace MotorsportErp.Infrastructure.Security;
 
 public class JwtProvider : IJwtProvider
 {

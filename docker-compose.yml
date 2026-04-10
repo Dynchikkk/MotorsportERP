@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.api
+      args: 
+        - UPLOAD_PATH=${UPLOAD_PATH}
     container_name: motorsport-api
     restart: always
     ports:
@@ -14,12 +16,14 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - photos_data:/app/wwwroot/uploads
+      - upload_data:${UPLOAD_PATH}
     environment:
       # ENV
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       # DB 
       - ConnectionStrings__DefaultConnection=Server=${DB_HOST};Database=${DB_NAME};User=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True
+      # FILE STORAGE
+      - FileStorageSettings__UploadsPath=${UPLOAD_PATH}
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -40,4 +44,4 @@ services:
 
 volumes:
   sql_data:
-  photos_data:  
+  upload_data:  

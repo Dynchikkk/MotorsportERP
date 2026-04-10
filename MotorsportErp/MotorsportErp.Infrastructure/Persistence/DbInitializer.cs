@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MotorsportErp.Application.Interfaces.Security;
 using MotorsportErp.Domain.Tracks;
@@ -70,8 +69,8 @@ public class DbInitializer
                 Bio = "System Administrator"
             };
 
-            await _context.Users.AddAsync(admin);
-            await _context.SaveChangesAsync();
+            _ = await _context.Users.AddAsync(admin);
+            _ = await _context.SaveChangesAsync();
         }
     }
 
@@ -94,8 +93,8 @@ public class DbInitializer
                 CreatedById = admin.Id
             };
 
-            await _context.Tracks.AddAsync(track);
-            await _context.SaveChangesAsync();
+            _ = await _context.Tracks.AddAsync(track);
+            _ = await _context.SaveChangesAsync();
         }
     }
 }

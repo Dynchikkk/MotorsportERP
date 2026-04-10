@@ -11,13 +11,16 @@ public class CarService : ICarService
 {
     private readonly ICarRepository _carRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IFileRepository _fileRepository;
 
     public CarService(
         ICarRepository carRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IFileRepository fileRepository)
     {
         _carRepository = carRepository;
         _userRepository = userRepository;
+        _fileRepository = fileRepository;
     }
 
     public async Task<Guid> CreateAsync(Guid userId, CarCreateRequest request)
@@ -90,5 +93,34 @@ public class CarService : ICarService
         }
 
         await _carRepository.DeleteAsync(car);
+    }
+
+    public async Task AddPhotoAsync(Guid userId, Guid targetEntityId, Guid photoId)
+    {
+        var car = await _carRepository.GetByIdAsync(targetEntityId) ?? throw new KeyNotFoundException("Car not found");
+        if (car.OwnerId != userId)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var photo = await _fileRepository.GetByIdAsync(photoId) ?? throw new KeyNotFoundException("Photo not found");
+        car.Photos.Add(photo);
+        await _carRepository.UpdateAsync(car);
+    }
+
+    public async Task RemovePhotoAsync(Guid userId, Guid targetEntityId, Guid photoId)
+    {
+        var car = await _carRepository.GetByIdAsync(targetEntityId) ?? throw new KeyNotFoundException();
+        if (car.OwnerId != userId)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var photo = await _fileRepository.GetByIdAsync(photoId);
+        if (photo != null)
+        {
+            _ = car.Photos.Remove(photo);
+            await _carRepository.UpdateAsync(car);
+        }
     }
 }

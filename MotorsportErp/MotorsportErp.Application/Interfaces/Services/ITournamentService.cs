@@ -3,7 +3,7 @@ using MotorsportErp.Application.DTO.Tournaments;
 
 namespace MotorsportErp.Application.Interfaces.Services;
 
-public interface ITournamentService
+public interface ITournamentService : IPhotoService
 {
     Task<PagedResponse<TournamentResponse>> GetAllAsync(int page = 0, int pageSize = 20);
     Task<TournamentDetailsResponse> GetByIdAsync(Guid id);

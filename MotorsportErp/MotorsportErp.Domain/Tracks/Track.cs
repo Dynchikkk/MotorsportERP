@@ -1,4 +1,5 @@
 ﻿using MotorsportErp.Domain.BaseEntities;
+using MotorsportErp.Domain.Files;
 using MotorsportErp.Domain.Tournaments;
 using MotorsportErp.Domain.Users;
 
@@ -14,6 +15,8 @@ public class Track : GuidEntity
 
     public int ConfirmationThreshold { get; set; } = 10;
     public int VoteCount => Votes.Count(v => v.IsPositive);
+
+    public ICollection<MediaFile> Photos { get; set; } = [];
 
     // Navigation
 

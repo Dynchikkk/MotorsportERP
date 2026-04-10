@@ -98,4 +98,26 @@ public class CarsController : ControllerBase
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Add photo to gallery
+    /// </summary>
+    [HttpPost("{id}/photos/{photoId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> AddPhoto(Guid id, Guid photoId)
+    {
+        await _carService.AddPhotoAsync(User.GetUserId(), id, photoId);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Remove photo from gallery
+    /// </summary>
+    [HttpDelete("{id}/photos/{photoId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> RemovePhoto(Guid id, Guid photoId)
+    {
+        await _carService.RemovePhotoAsync(User.GetUserId(), id, photoId);
+        return NoContent();
+    }
 }

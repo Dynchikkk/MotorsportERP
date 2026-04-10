@@ -23,6 +23,7 @@ public class TournamentRepository : ITournamentRepository
                 .ThenInclude(a => a.User)
             .Include(t => t.Applications)
                 .ThenInclude(a => a.Car)
+            .Include(t => t.Photos)
             .Include(t => t.Results)
             .Include(t => t.Organizers)
             .FirstOrDefaultAsync(t => t.Id == id);
@@ -35,6 +36,7 @@ public class TournamentRepository : ITournamentRepository
     {
         var query = _context.Tournaments
             .Include(t => t.Applications)
+            .Include(t => t.Photos)
             .AsQueryable();
 
         if (filter != null)
@@ -50,6 +52,7 @@ public class TournamentRepository : ITournamentRepository
         return await _context.Tournaments
             .Where(t => t.Status == status)
             .Include(t => t.Applications)
+            .Include(t => t.Photos)
             .ToListAsync();
     }
 

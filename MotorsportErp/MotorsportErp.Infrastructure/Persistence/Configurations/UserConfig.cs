@@ -12,5 +12,10 @@ public class UserConfig : IEntityTypeConfiguration<User>
 
         _ = builder.Property(u => u.Bio).HasMaxLength(1000).IsRequired(false);
         _ = builder.Property(u => u.IsBlocked).HasDefaultValue(false);
+
+        _ = builder.HasOne(u => u.Avatar)
+           .WithMany()
+           .HasForeignKey(u => u.AvatarId)
+           .OnDelete(DeleteBehavior.SetNull);
     }
 }

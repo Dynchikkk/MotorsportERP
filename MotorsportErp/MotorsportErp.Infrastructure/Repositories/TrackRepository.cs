@@ -20,6 +20,7 @@ public class TrackRepository : ITrackRepository
     {
         return await _context.Tracks
             .Include(t => t.Votes)
+            .Include(t => t.Photos)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
@@ -28,7 +29,9 @@ public class TrackRepository : ITrackRepository
             int page,
             int pageSize)
     {
-        var query = _context.Tracks.AsQueryable();
+        var query = _context.Tracks
+            .Include(t => t.Photos)
+            .AsQueryable();
 
         if (filter != null)
         {
