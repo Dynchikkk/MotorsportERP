@@ -1,0 +1,52 @@
+﻿using MotorsportErp.Application.Common.Interfaces.Files;
+using MotorsportErp.Application.Common.Interfaces.Repositories;
+using MotorsportErp.Application.Common.Interfaces.Security;
+using MotorsportErp.Application.Features.Auth.Interfaces;
+using MotorsportErp.Application.Features.Auth.Services;
+using MotorsportErp.Application.Features.Cars.Interfaces;
+using MotorsportErp.Application.Features.Cars.Services;
+using MotorsportErp.Application.Features.Tournaments.Interfaces;
+using MotorsportErp.Application.Features.Tournaments.Services;
+using MotorsportErp.Application.Features.Tracks.Interfaces;
+using MotorsportErp.Application.Features.Tracks.Services;
+using MotorsportErp.Application.Features.Users.Interfaces;
+using MotorsportErp.Application.Features.Users.Services;
+using MotorsportErp.Infrastructure.Files;
+using MotorsportErp.Infrastructure.Persistence;
+using MotorsportErp.Infrastructure.Persistence.Repositories;
+using MotorsportErp.Infrastructure.Security;
+
+namespace MotorsportErp.WebApi.Extensions;
+
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    {
+        _ = services.AddScoped<IAuthService, AuthService>();
+        _ = services.AddScoped<IUserService, UserService>();
+        _ = services.AddScoped<ICarService, CarService>();
+        _ = services.AddScoped<ITrackService, TrackService>();
+        _ = services.AddScoped<ITournamentService, TournamentService>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+    {
+        _ = services.AddScoped<IUserRepository, UserRepository>();
+        _ = services.AddScoped<ICarRepository, CarRepository>();
+        _ = services.AddScoped<ITrackRepository, TrackRepository>();
+        _ = services.AddScoped<ITournamentRepository, TournamentRepository>();
+        _ = services.AddScoped<ITournamentApplicationRepository, TournamentApplicationRepository>();
+        _ = services.AddScoped<IFileRepository, FileRepository>();
+
+        _ = services.AddScoped<IJwtProvider, JwtProvider>();
+        _ = services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+        _ = services.AddScoped<IMediaFileService, MediaFileService>();
+
+        _ = services.AddScoped<DbInitializer>();
+
+        return services;
+    }
+}
