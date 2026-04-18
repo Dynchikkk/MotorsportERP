@@ -1,28 +1,21 @@
 export const PATHS = {
   HOME: '/',
-  
   AUTH: {
     LOGIN: '/login',
     REGISTER: '/register',
   },
-  
-  USER: {
+  USERS: {
+    ROOT: '/users',
     PROFILE: '/profile',
-    PUBLIC_PROFILE: (id: string | number = ':id') => `/users/${id}`,
-    MANAGEMENT: '/users',
     GARAGE: '/garage',
+    DETAILS: (id = ':id') => `/users/${id}`,
   },
-
   TOURNAMENTS: {
     ROOT: '/tournaments',
-    CREATE: '/tournaments/create',
-    DETAILS: (id: string | number = ':id') => `/tournaments/${id}`,
-    EDIT: (id: string | number = ':id') => `/tournaments/${id}/edit`,
+    DETAILS: (id = ':id') => `/tournaments/${id}`,
   },
-
   TRACKS: {
     ROOT: '/tracks',
-    CREATE: '/tracks/create',
-    DETAILS: (id: string | number = ':id') => `/tracks/${id}`,
+    DETAILS: (id = ':id') => `/tracks/${id}`,
   },
 } as const;
