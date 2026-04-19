@@ -46,9 +46,9 @@ public class AppDbContext : DbContext
         var entries = ChangeTracker
             .Entries<GuidEntity>()
             .Where(e =>
-                e.State == EntityState.Added ||
-                e.State == EntityState.Modified ||
-                e.State == EntityState.Deleted);
+                e.State is EntityState.Added or
+                EntityState.Modified or
+                EntityState.Deleted);
 
         foreach (var entityEntry in entries)
         {

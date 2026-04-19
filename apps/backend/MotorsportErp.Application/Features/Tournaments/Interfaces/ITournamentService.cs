@@ -4,7 +4,7 @@ using MotorsportErp.Application.Features.Tournaments.Contracts;
 
 namespace MotorsportErp.Application.Features.Tournaments.Interfaces;
 
-public interface ITournamentService : IPhotoGalleryService, IReferenceDataServices<TournamentReferenceDataResponce>
+public interface ITournamentService : IPhotoGalleryService, IReferenceDataServices<TournamentReferenceDataResponse>
 {
     Task<PagedResponse<TournamentResponse>> GetAllAsync(
         TournamentListQuery query,

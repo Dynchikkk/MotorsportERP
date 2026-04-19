@@ -1,4 +1,4 @@
-﻿using MotorsportErp.Application.Common.Contracts;
+﻿using MotorsportErp.Application.Features.MediaFiles.Contracts;
 using MotorsportErp.Domain.Users;
 
 namespace MotorsportErp.Application.Features.Users.Contracts;
@@ -11,5 +11,5 @@ public class UserAdminResponse
     public UserRole Roles { get; set; }
     public bool IsBlocked { get; set; }
     public int RaceCount { get; set; }
-    public MediaFileResponce? Avatar { get; set; }
+    public MediaFileResponse? Avatar { get; set; }
 }

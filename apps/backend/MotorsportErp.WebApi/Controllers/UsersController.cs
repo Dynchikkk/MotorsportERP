@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MotorsportErp.Application.Common.Contracts;
-using MotorsportErp.Application.Features.Tracks.Contracts;
 using MotorsportErp.Application.Features.Users.Contracts;
 using MotorsportErp.Application.Features.Users.Interfaces;
 using MotorsportErp.Domain.Users;
@@ -29,8 +28,8 @@ public class UsersController : ControllerBase
     /// <returns>Tournament user data.</returns>
     [HttpGet("referenceData")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(UserReferenceDataResponce), StatusCodes.Status200OK)]
-    public ActionResult<UserReferenceDataResponce> GetReferenceData()
+    [ProducesResponseType(typeof(UserReferenceDataResponse), StatusCodes.Status200OK)]
+    public ActionResult<UserReferenceDataResponse> GetReferenceData()
     {
         var result = _userService.GetReferenceData();
         return Ok(result);

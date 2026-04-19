@@ -266,7 +266,7 @@ public class DbInitializer
         await _context.TournamentApplications.AddRangeAsync(applications);
         await _context.TournamentResults.AddRangeAsync(results);
 
-        await _context.SaveChangesAsync();
+        _ = await _context.SaveChangesAsync();
     }
 
     private static User CreateUser(

@@ -2,7 +2,6 @@
 using MotorsportErp.Application.Common.Interfaces.Repositories;
 using MotorsportErp.Domain.Users;
 using MotorsportErp.Infrastructure.Extensions;
-using MotorsportErp.Infrastructure.Persistence;
 using System.Linq.Expressions;
 
 namespace MotorsportErp.Infrastructure.Persistence.Repositories;

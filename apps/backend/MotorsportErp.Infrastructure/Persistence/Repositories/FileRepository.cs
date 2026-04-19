@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MotorsportErp.Application.Common.Interfaces.Repositories;
 using MotorsportErp.Domain.Files;
-using MotorsportErp.Infrastructure.Persistence;
 
 namespace MotorsportErp.Infrastructure.Persistence.Repositories;
 public class FileRepository : IFileRepository

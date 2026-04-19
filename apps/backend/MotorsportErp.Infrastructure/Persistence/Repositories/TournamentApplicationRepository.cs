@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MotorsportErp.Domain.Tournaments;
-using MotorsportErp.Infrastructure.Persistence;
 
 namespace MotorsportErp.Infrastructure.Persistence.Repositories;
 

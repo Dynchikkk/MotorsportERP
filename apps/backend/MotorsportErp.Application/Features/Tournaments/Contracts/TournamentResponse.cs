@@ -1,4 +1,4 @@
-﻿using MotorsportErp.Application.Common.Contracts;
+﻿using MotorsportErp.Application.Features.MediaFiles.Contracts;
 using MotorsportErp.Domain.Cars;
 using MotorsportErp.Domain.Tournaments;
 
@@ -19,5 +19,5 @@ public class TournamentResponse
     public int ParticipantsCount { get; set; }
     public int ApplicationsCount { get; set; }
 
-    public List<MediaFileResponce> Photos { get; set; } = [];
+    public List<MediaFileResponse> Photos { get; set; } = [];
 }

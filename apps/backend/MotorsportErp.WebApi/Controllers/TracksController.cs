@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MotorsportErp.Application.Common.Contracts;
-using MotorsportErp.Application.Features.Tournaments.Contracts;
 using MotorsportErp.Application.Features.Tracks.Contracts;
 using MotorsportErp.Application.Features.Tracks.Interfaces;
 using MotorsportErp.WebApi.Extensions;
@@ -19,7 +18,7 @@ public class TracksController : ControllerBase
 
     public TracksController(ITrackService trackService)
     {
-        this._trackService = trackService;
+        _trackService = trackService;
     }
 
     /// <summary>
@@ -28,8 +27,8 @@ public class TracksController : ControllerBase
     /// <returns>Tournament track data.</returns>
     [HttpGet("referenceData")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(TrackReferenceDataResponce), StatusCodes.Status200OK)]
-    public ActionResult<TrackReferenceDataResponce> GetReferenceData()
+    [ProducesResponseType(typeof(TrackReferenceDataResponse), StatusCodes.Status200OK)]
+    public ActionResult<TrackReferenceDataResponse> GetReferenceData()
     {
         var result = _trackService.GetReferenceData();
         return Ok(result);

@@ -15,4 +15,8 @@
     <ProjectReference Include="..\MotorsportErp.Domain\MotorsportErp.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Common\Mappers\" />
+  </ItemGroup>
+
 </Project>

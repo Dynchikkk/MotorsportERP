@@ -5,7 +5,7 @@ using MotorsportErp.Domain.Users;
 
 namespace MotorsportErp.Application.Features.Users.Interfaces;
 
-public interface IUserService : IReferenceDataServices<UserReferenceDataResponce>
+public interface IUserService : IReferenceDataServices<UserReferenceDataResponse>
 {
     Task<UserResponse> GetByIdAsync(Guid id);
     Task<PublicUserProfileResponse> GetPublicProfileAsync(Guid id);

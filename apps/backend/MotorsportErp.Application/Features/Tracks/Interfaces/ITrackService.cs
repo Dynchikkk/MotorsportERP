@@ -4,7 +4,7 @@ using MotorsportErp.Application.Features.Tracks.Contracts;
 
 namespace MotorsportErp.Application.Features.Tracks.Interfaces;
 
-public interface ITrackService : IPhotoGalleryService, IReferenceDataServices<TrackReferenceDataResponce>
+public interface ITrackService : IPhotoGalleryService, IReferenceDataServices<TrackReferenceDataResponse>
 {
     Task<PagedResponse<TrackResponse>> GetAllAsync(TrackListQuery query, int page = 0, int pageSize = 20);
     Task<TrackDetailsResponse> GetByIdAsync(Guid id);

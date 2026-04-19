@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using MotorsportErp.Application.Common.Contracts;
 using MotorsportErp.Application.Features.Cars.Contracts;
 using MotorsportErp.Application.Features.Cars.Interfaces;
-using MotorsportErp.Application.Features.Tournaments.Contracts;
 using MotorsportErp.WebApi.Extensions;
 using System.Net.Mime;
 
@@ -28,8 +27,8 @@ public class CarsController : ControllerBase
     /// <returns>Tournament car data.</returns>
     [HttpGet("referenceData")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(CarReferenceDataResponce), StatusCodes.Status200OK)]
-    public ActionResult<CarReferenceDataResponce> GetReferenceData()
+    [ProducesResponseType(typeof(CarReferenceDataResponse), StatusCodes.Status200OK)]
+    public ActionResult<CarReferenceDataResponse> GetReferenceData()
     {
         var result = _carService.GetReferenceData();
         return Ok(result);

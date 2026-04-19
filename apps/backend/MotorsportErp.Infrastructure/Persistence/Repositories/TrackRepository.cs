@@ -3,7 +3,6 @@ using MotorsportErp.Application.Common.Interfaces.Repositories;
 using MotorsportErp.Application.Features.Tracks.Contracts;
 using MotorsportErp.Domain.Tracks;
 using MotorsportErp.Infrastructure.Extensions;
-using MotorsportErp.Infrastructure.Persistence;
 using System.Linq.Expressions;
 
 namespace MotorsportErp.Infrastructure.Persistence.Repositories;

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MotorsportErp.Application.Features.Cars.Contracts;
 using MotorsportErp.Application.Features.Tournaments.Contracts;
 using MotorsportErp.Application.Features.Tournaments.Interfaces;
 using MotorsportErp.WebApi.Extensions;
@@ -15,7 +14,7 @@ namespace MotorsportErp.WebApi.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/applications")]
-[Authorize] // All actions strictly require an authenticated user
+[Authorize]
 [Produces(MediaTypeNames.Application.Json)]
 public class TournamentApplicationsController : ControllerBase
 {
@@ -32,8 +31,8 @@ public class TournamentApplicationsController : ControllerBase
     /// <returns>Tournament reference data.</returns>
     [HttpGet("referenceData")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(TournamentReferenceDataResponce), StatusCodes.Status200OK)]
-    public ActionResult<TournamentReferenceDataResponce> GetReferenceData()
+    [ProducesResponseType(typeof(TournamentReferenceDataResponse), StatusCodes.Status200OK)]
+    public ActionResult<TournamentReferenceDataResponse> GetReferenceData()
     {
         var result = _tournamentService.GetReferenceData();
         return Ok(result);
@@ -53,12 +52,8 @@ public class TournamentApplicationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CancelApplication(Guid id)
     {
-        // Extract the ID of the user making the request from the JWT token
         var userId = User.GetUserId();
-
-        // Delegate the business logic to the service
         await _tournamentService.CancelApplicationAsync(userId, id);
-
         return NoContent();
     }
 
@@ -75,11 +70,8 @@ public class TournamentApplicationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Approve(Guid id)
     {
-        // Extract the ID of the current user (expected to be an organizer/admin)
         var userId = User.GetUserId();
-
         await _tournamentService.ApproveAsync(userId, id);
-
         return NoContent();
     }
 
@@ -95,11 +87,8 @@ public class TournamentApplicationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Reject(Guid id)
     {
-        // Extract the ID of the current user (expected to be an organizer/admin)
         var userId = User.GetUserId();
-
         await _tournamentService.RejectAsync(userId, id);
-
         return NoContent();
     }
 }

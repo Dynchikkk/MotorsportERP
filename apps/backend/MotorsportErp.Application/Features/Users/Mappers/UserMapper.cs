@@ -1,5 +1,5 @@
-﻿using MotorsportErp.Application.Common.Mappers;
-using MotorsportErp.Application.Features.Auth.Contracts;
+﻿using MotorsportErp.Application.Features.Auth.Contracts;
+using MotorsportErp.Application.Features.MediaFiles.Mappers;
 using MotorsportErp.Application.Features.Users.Contracts;
 using MotorsportErp.Domain.Users;
 

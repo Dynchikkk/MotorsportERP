@@ -7,7 +7,6 @@ using MotorsportErp.Application.Common.Settings;
 using MotorsportErp.Application.Features.Tracks.Contracts;
 using MotorsportErp.Application.Features.Tracks.Interfaces;
 using MotorsportErp.Application.Features.Tracks.Mappers;
-using MotorsportErp.Domain.Cars;
 using MotorsportErp.Domain.Tournaments;
 using MotorsportErp.Domain.Tracks;
 using MotorsportErp.Domain.Users;
@@ -256,9 +255,9 @@ public class TrackService : ITrackService
         }
     }
 
-    public TrackReferenceDataResponce GetReferenceData()
+    public TrackReferenceDataResponse GetReferenceData()
     {
-        return new TrackReferenceDataResponce()
+        return new TrackReferenceDataResponse()
         {
             MinRacesToCreateTrack = _settings.MinRacesToCreate,
             DefaultTrackConfirmationThreshold = _settings.DefaultConfirmationThreshold,

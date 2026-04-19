@@ -1,4 +1,4 @@
-﻿using MotorsportErp.Application.Common.Contracts;
+﻿using MotorsportErp.Application.Features.MediaFiles.Contracts;
 using MotorsportErp.Application.Features.Tournaments.Contracts;
 using MotorsportErp.Application.Features.Users.Contracts;
 using MotorsportErp.Domain.Tracks;
@@ -12,7 +12,7 @@ public class TrackDetailsResponse
     public TrackStatus Status { get; set; }
     public string Name { get; set; } = default!;
     public string Location { get; set; } = default!;
-    public List<MediaFileResponce> Photos { get; set; } = [];
+    public List<MediaFileResponse> Photos { get; set; } = [];
 
     public int VoteCount { get; set; }
     public int ConfirmationThreshold { get; set; }

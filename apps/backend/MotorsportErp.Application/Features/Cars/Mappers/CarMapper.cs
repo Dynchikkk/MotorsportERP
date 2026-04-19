@@ -1,5 +1,5 @@
-﻿using MotorsportErp.Application.Common.Mappers;
-using MotorsportErp.Application.Features.Cars.Contracts;
+﻿using MotorsportErp.Application.Features.Cars.Contracts;
+using MotorsportErp.Application.Features.MediaFiles.Mappers;
 using MotorsportErp.Domain.Cars;
 
 namespace MotorsportErp.Application.Features.Cars.Mappers;

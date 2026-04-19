@@ -1,5 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens.Experimental;
-using MotorsportErp.Application.Common.Contracts;
+﻿using MotorsportErp.Application.Common.Contracts;
 using MotorsportErp.Application.Common.Exceptions;
 using MotorsportErp.Application.Common.Extensions;
 using MotorsportErp.Application.Common.Interfaces.Repositories;
@@ -254,10 +253,10 @@ public class UserService : IUserService
         };
     }
 
-    public UserReferenceDataResponce GetReferenceData()
+    public UserReferenceDataResponse GetReferenceData()
     {
         var invisibleRoles = new List<string>() { UserRole.Moderator.ToString(), UserRole.SuperAdmin.ToString() };
-        return new UserReferenceDataResponce
+        return new UserReferenceDataResponse
         {
             UserRoles = EnumExtensions.GetEnumValues<TrackStatus>()
                  .Where(item => !invisibleRoles.Contains(item.Key))

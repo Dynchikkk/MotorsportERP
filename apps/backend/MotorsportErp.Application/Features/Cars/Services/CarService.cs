@@ -5,10 +5,7 @@ using MotorsportErp.Application.Common.Interfaces.Repositories;
 using MotorsportErp.Application.Features.Cars.Contracts;
 using MotorsportErp.Application.Features.Cars.Interfaces;
 using MotorsportErp.Application.Features.Cars.Mappers;
-using MotorsportErp.Application.Features.Tournaments.Contracts;
 using MotorsportErp.Domain.Cars;
-using MotorsportErp.Domain.Files;
-using MotorsportErp.Domain.Users;
 
 namespace MotorsportErp.Application.Features.Cars.Services;
 
@@ -131,12 +128,12 @@ public class CarService : ICarService
         }
     }
 
-    public CarReferenceDataResponce GetReferenceData()
+    public CarReferenceDataResponse GetReferenceData()
     {
-        return new CarReferenceDataResponce()
+        return new CarReferenceDataResponse()
         {
             CarClasses = EnumExtensions.GetEnumValues<CarClass>()
-                .Select(item => new EnumValueResponse() { Name = item.Key, Value = item.Value }) 
+                .Select(item => new EnumValueResponse() { Name = item.Key, Value = item.Value })
                 .ToList()
         };
     }

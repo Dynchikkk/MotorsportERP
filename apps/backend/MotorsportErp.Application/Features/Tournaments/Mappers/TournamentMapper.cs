@@ -1,5 +1,5 @@
-﻿using MotorsportErp.Application.Common.Mappers;
-using MotorsportErp.Application.Features.Cars.Mappers;
+﻿using MotorsportErp.Application.Features.Cars.Mappers;
+using MotorsportErp.Application.Features.MediaFiles.Mappers;
 using MotorsportErp.Application.Features.Tournaments.Contracts;
 using MotorsportErp.Application.Features.Tracks.Mappers;
 using MotorsportErp.Application.Features.Users.Mappers;

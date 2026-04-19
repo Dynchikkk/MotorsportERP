@@ -31,8 +31,8 @@ public class TournamentsController : ControllerBase
     /// <returns>Tournament reference data.</returns>
     [HttpGet("referenceData")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(TournamentReferenceDataResponce), StatusCodes.Status200OK)]
-    public ActionResult<TournamentReferenceDataResponce> GetReferenceData()
+    [ProducesResponseType(typeof(TournamentReferenceDataResponse), StatusCodes.Status200OK)]
+    public ActionResult<TournamentReferenceDataResponse> GetReferenceData()
     {
         var result = _tournamentService.GetReferenceData();
         return Ok(result);

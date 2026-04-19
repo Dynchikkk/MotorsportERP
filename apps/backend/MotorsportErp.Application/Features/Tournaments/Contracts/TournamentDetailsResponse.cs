@@ -1,4 +1,4 @@
-﻿using MotorsportErp.Application.Common.Contracts;
+﻿using MotorsportErp.Application.Features.MediaFiles.Contracts;
 using MotorsportErp.Application.Features.Tracks.Contracts;
 using MotorsportErp.Application.Features.Users.Contracts;
 using MotorsportErp.Domain.Cars;
@@ -27,5 +27,5 @@ public class TournamentDetailsResponse
     public List<UserResponse> Organizers { get; set; } = [];
     public List<TournamentApplicationResponse> Participants { get; set; } = [];
     public List<TournamentResultResponse> Results { get; set; } = [];
-    public List<MediaFileResponce> Photos { get; set; } = [];
+    public List<MediaFileResponse> Photos { get; set; } = [];
 }

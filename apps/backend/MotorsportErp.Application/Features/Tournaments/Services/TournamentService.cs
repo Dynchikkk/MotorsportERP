@@ -7,7 +7,6 @@ using MotorsportErp.Application.Common.Settings;
 using MotorsportErp.Application.Features.Tournaments.Contracts;
 using MotorsportErp.Application.Features.Tournaments.Interfaces;
 using MotorsportErp.Application.Features.Tournaments.Mappers;
-using MotorsportErp.Domain.Cars;
 using MotorsportErp.Domain.Tournaments;
 using MotorsportErp.Domain.Tracks;
 using MotorsportErp.Domain.Users;
@@ -388,12 +387,9 @@ public class TournamentService : ITournamentService
         var user = await _userRepository.GetByIdAsync(userId) ?? throw new KeyNotFoundException("User not found");
         var tournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new KeyNotFoundException("Tournament not found");
 
-        if (!HasAccess(tournament, user))
-        {
-            throw new ForbiddenException();
-        }
-
-        return tournament.Applications
+        return !HasAccess(tournament, user)
+            ? throw new ForbiddenException()
+            : (IReadOnlyCollection<TournamentApplicationResponse>)tournament.Applications
             .OrderBy(a => a.Status)
             .ThenBy(a => a.User.Nickname)
             .Select(TournamentMapper.ToApplicationResponse)
@@ -533,13 +529,13 @@ public class TournamentService : ITournamentService
                user.Roles.HasFlag(UserRole.SuperAdmin);
     }
 
-    public TournamentReferenceDataResponce GetReferenceData()
+    public TournamentReferenceDataResponse GetReferenceData()
     {
-        return new TournamentReferenceDataResponce
+        return new TournamentReferenceDataResponse
         {
             MinRacesToBecomeOrganizer = _settings.MinRacesToBecomeOrganizer,
             TournamentApplicationStatuses = EnumExtensions.GetEnumValues<TournamentApplicationStatus>()
-                .Select(item => new EnumValueResponse() { Name = item.Key, Value = item.Value})
+                .Select(item => new EnumValueResponse() { Name = item.Key, Value = item.Value })
                 .ToList(),
             TournamentStatuses = EnumExtensions.GetEnumValues<TournamentStatus>()
                 .Select(item => new EnumValueResponse() { Name = item.Key, Value = item.Value })

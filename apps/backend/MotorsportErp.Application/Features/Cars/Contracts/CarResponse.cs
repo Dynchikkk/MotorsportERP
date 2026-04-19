@@ -1,4 +1,4 @@
-﻿using MotorsportErp.Application.Common.Contracts;
+﻿using MotorsportErp.Application.Features.MediaFiles.Contracts;
 using MotorsportErp.Domain.Cars;
 
 namespace MotorsportErp.Application.Features.Cars.Contracts;
@@ -14,5 +14,5 @@ public class CarResponse
 
     public string? Description { get; set; }
 
-    public List<MediaFileResponce> Photos { get; set; } = [];
+    public List<MediaFileResponse> Photos { get; set; } = [];
 }

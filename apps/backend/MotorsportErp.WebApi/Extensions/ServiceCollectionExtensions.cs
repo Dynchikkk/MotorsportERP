@@ -5,6 +5,8 @@ using MotorsportErp.Application.Features.Auth.Interfaces;
 using MotorsportErp.Application.Features.Auth.Services;
 using MotorsportErp.Application.Features.Cars.Interfaces;
 using MotorsportErp.Application.Features.Cars.Services;
+using MotorsportErp.Application.Features.MediaFiles.Interfaces;
+using MotorsportErp.Application.Features.MediaFiles.Services;
 using MotorsportErp.Application.Features.Tournaments.Interfaces;
 using MotorsportErp.Application.Features.Tournaments.Services;
 using MotorsportErp.Application.Features.Tracks.Interfaces;
@@ -27,6 +29,7 @@ public static class ServiceCollectionExtensions
         _ = services.AddScoped<ICarService, CarService>();
         _ = services.AddScoped<ITrackService, TrackService>();
         _ = services.AddScoped<ITournamentService, TournamentService>();
+        _ = services.AddScoped<IMediaFileService, MediaFileService>();
 
         return services;
     }
@@ -42,8 +45,7 @@ public static class ServiceCollectionExtensions
 
         _ = services.AddScoped<IJwtProvider, JwtProvider>();
         _ = services.AddScoped<IPasswordHasher, PasswordHasher>();
-
-        _ = services.AddScoped<IMediaFileService, MediaFileService>();
+        _ = services.AddScoped<IMediaFileStorageProvider, LocalMediaFileStorageProvider>();
 
         _ = services.AddScoped<DbInitializer>();
 

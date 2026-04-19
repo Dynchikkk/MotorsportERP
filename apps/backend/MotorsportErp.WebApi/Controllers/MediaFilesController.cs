@@ -1,18 +1,18 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MotorsportErp.Application.Common.Interfaces.Files;
+using MotorsportErp.Application.Features.MediaFiles.Interfaces;
 using MotorsportErp.WebApi.Extensions;
 
 namespace MotorsportErp.WebApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/files")]
 [Authorize]
-public class FilesController : ControllerBase
+public class MediaFilesController : ControllerBase
 {
     private readonly IMediaFileService _fileService;
 
-    public FilesController(IMediaFileService fileService)
+    public MediaFilesController(IMediaFileService fileService)
     {
         _fileService = fileService;
     }
