@@ -7,16 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Common\Mappers\**" />
+    <EmbeddedResource Remove="Common\Mappers\**" />
+    <None Remove="Common\Mappers\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.16.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MotorsportErp.Domain\MotorsportErp.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Common\Mappers\" />
   </ItemGroup>
 
 </Project>

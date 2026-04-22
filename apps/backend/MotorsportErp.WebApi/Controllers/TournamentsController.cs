@@ -99,7 +99,6 @@ public class TournamentsController : ControllerBase
         var userId = User.GetUserId();
         var tournamentId = await _tournamentService.CreateAsync(userId, request);
 
-        // Return 201 Created with the generated ID
         return StatusCode(StatusCodes.Status201Created, tournamentId);
     }
 
@@ -230,7 +229,6 @@ public class TournamentsController : ControllerBase
     public async Task<IActionResult> Apply(Guid id, [FromBody] TournamentApplyRequest request)
     {
         var userId = User.GetUserId();
-        // ID from route overrides request body ID to prevent parameter tampering
         await _tournamentService.ApplyAsync(userId, id, request.CarId);
         return NoContent();
     }

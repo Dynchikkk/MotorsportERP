@@ -4,11 +4,6 @@ using MotorsportErp.Application.Common.Interfaces.Repositories;
 using MotorsportErp.Application.Features.MediaFiles.Contracts;
 using MotorsportErp.Application.Features.MediaFiles.Interfaces;
 using MotorsportErp.Domain.Files;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MotorsportErp.Application.Features.MediaFiles.Services;
 
@@ -43,7 +38,10 @@ public class MediaFileService : IMediaFileService
     public async Task DeleteFileAsync(Guid fileId, Guid ownerId)
     {
         var file = await _fileRepository.GetByIdAsync(fileId) ?? throw new KeyNotFoundException();
-        if (file.UploadedById != ownerId) throw new ForbiddenException();
+        if (file.UploadedById != ownerId)
+        {
+            throw new ForbiddenException();
+        }
 
         _storageProvider.DeleteFile(file.SavedUrl);
         await _fileRepository.DeleteAsync(file);

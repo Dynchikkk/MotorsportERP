@@ -45,18 +45,16 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> LoginAsync(UserLoginRequest request)
     {
-        User user = await _userRepository.GetByEmailAsync(request.Email)
-            ?? throw new UnauthorizedAccessException("Invalid email or password");
+        User user = await _userRepository.GetByEmailAsync(request.Email) ?? throw new UnauthorizedAccessException("Invalid email or password");
+        if (user.IsBlocked)
+        {
+            throw new UnauthorizedAccessException("Account is blocked");
+        }
 
         bool isValid = _passwordHasher.Verify(request.Password, user.PasswordHash);
         if (!isValid)
         {
             throw new UnauthorizedAccessException("Invalid email or password");
-        }
-
-        if (user.IsBlocked)
-        {
-            throw new UnauthorizedAccessException("Account is blocked");
         }
 
         var accessToken = _jwtProvider.GenerateToken(user);
@@ -80,7 +78,6 @@ public class AuthService : IAuthService
         }
 
         var user = await _userRepository.GetByIdAsync(userId) ?? throw new SecurityTokenException("Invalid request");
-
         if (user.IsBlocked)
         {
             throw new UnauthorizedAccessException("Account is blocked");

@@ -35,7 +35,7 @@ public class TracksController : ControllerBase
     }
 
     /// <summary>
-    /// Получить список трасс (публично)
+    /// Get all tracks
     /// </summary>
     [HttpGet]
     [AllowAnonymous]
@@ -50,7 +50,7 @@ public class TracksController : ControllerBase
     }
 
     /// <summary>
-    /// Получить детали трассы
+    /// Get track details
     /// </summary>
     [HttpGet("{id}")]
     [AllowAnonymous]
@@ -62,7 +62,7 @@ public class TracksController : ControllerBase
     }
 
     /// <summary>
-    /// Создать трассу
+    /// Create track
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(Guid), StatusCodes.Status201Created)]
@@ -75,7 +75,7 @@ public class TracksController : ControllerBase
     }
 
     /// <summary>
-    /// Проголосовать за трассу
+    /// Vote for the track
     /// </summary>
     [HttpPost("{id}/vote")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -88,7 +88,7 @@ public class TracksController : ControllerBase
     }
 
     /// <summary>
-    /// Обновить трассу (автор или модератор)
+    /// Update track
     /// </summary>
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -101,7 +101,7 @@ public class TracksController : ControllerBase
     }
 
     /// <summary>
-    /// Подтвердить трассу (модератор)
+    /// Confirm track
     /// </summary>
     [HttpPost("{id}/confirm")]
     [Authorize(Policy = "RequireModerator")]
@@ -114,7 +114,7 @@ public class TracksController : ControllerBase
     }
 
     /// <summary>
-    /// Сделать трассу официальной (модератор)
+    /// Make track official
     /// </summary>
     [HttpPost("{id}/official")]
     [Authorize(Policy = "RequireModerator")]
@@ -127,7 +127,7 @@ public class TracksController : ControllerBase
     }
 
     /// <summary>
-    /// Удалить трассу (автор или модератор)
+    /// Delete track
     /// </summary>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -139,6 +139,7 @@ public class TracksController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
     /// Add photo to gallery
     /// </summary>
     [HttpPost("{id}/photos/{photoId}")]
