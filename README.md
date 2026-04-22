@@ -17,7 +17,9 @@ This script creates `.env` from `.env.dev` (if `.env` does not exist yet).
 
 Rebuild images and start (Dockerfile/dependencies/structure changed or first start):
 ```bash
-docker compose up -d --build
+docker compose pull
+docker compose build
+docker compose up -d
 ```
 
 Start stack:
