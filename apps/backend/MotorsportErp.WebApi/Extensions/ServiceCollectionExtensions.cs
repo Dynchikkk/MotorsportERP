@@ -1,6 +1,8 @@
-﻿using MotorsportErp.Application.Common.Interfaces.Files;
+using Microsoft.Extensions.Options;
+using MotorsportErp.Application.Common.Interfaces.Files;
 using MotorsportErp.Application.Common.Interfaces.Repositories;
 using MotorsportErp.Application.Common.Interfaces.Security;
+using MotorsportErp.Application.Common.Settings;
 using MotorsportErp.Application.Features.Auth.Interfaces;
 using MotorsportErp.Application.Features.Auth.Services;
 using MotorsportErp.Application.Features.Cars.Interfaces;
@@ -16,12 +18,29 @@ using MotorsportErp.Application.Features.Users.Services;
 using MotorsportErp.Infrastructure.Files;
 using MotorsportErp.Infrastructure.Persistence;
 using MotorsportErp.Infrastructure.Persistence.Repositories;
+using MotorsportErp.Infrastructure.Persistence.Settings;
 using MotorsportErp.Infrastructure.Security;
 
 namespace MotorsportErp.WebApi.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    public static IServiceCollection AddApplicationOptions(this IServiceCollection services, IConfiguration configuration)
+    {
+        _ = services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+        _ = services.Configure<TrackSettings>(configuration.GetSection("TrackSettings"));
+        _ = services.Configure<TournamentSettings>(configuration.GetSection("TournamentSettings"));
+        _ = services.Configure<SeedSettings>(configuration.GetSection("SeedSettings"));
+
+        _ = services.AddSingleton<IValidateOptions<MediaFileStorageSettings>, MediaFileStorageSettingsValidator>();
+        _ = services
+            .AddOptions<MediaFileStorageSettings>()
+            .Bind(configuration.GetSection("MediaFileStorageSettings"))
+            .ValidateOnStart();
+
+        return services;
+    }
+
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         _ = services.AddScoped<IAuthService, AuthService>();

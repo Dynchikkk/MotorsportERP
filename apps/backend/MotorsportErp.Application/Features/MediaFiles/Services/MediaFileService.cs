@@ -18,10 +18,9 @@ public class MediaFileService : IMediaFileService
         _storageProvider = storageProvider;
     }
 
-    public async Task<MediaFileResponse> UploadImageAsync(Stream fileStream, string fileName, Guid userId)
+    public async Task<MediaFileResponse> UploadImageAsync(Stream fileStream, string fileName, string? contentType, long fileSize, Guid userId)
     {
-        var ext = Path.GetExtension(fileName).ToLowerInvariant();
-        var savedUrl = await _storageProvider.UploadFileAsync(fileStream, ext);
+        var savedUrl = await _storageProvider.UploadFileAsync(fileStream, fileName, contentType, fileSize);
 
         var mediaFile = new MediaFile
         {

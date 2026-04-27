@@ -12,53 +12,66 @@ public class LocalMediaFileStorageProvider : IMediaFileStorageProvider
         _settings = options.Value;
     }
 
-    public async Task<string> UploadFileAsync(Stream fileStream, string fileName)
+    public async Task<string> UploadFileAsync(Stream fileStream, string fileName, string? contentType, long fileSize)
     {
-        var basePath = ResolveUploadPath();
+        var basePath = MediaFileStoragePathResolver.ResolvePhysicalUploadsPath(_settings.UploadsPath);
 
-        if (fileStream == null || fileStream.Length == 0)
+        if (fileStream == null || fileSize <= 0)
         {
             throw new ArgumentException("File stream is empty");
         }
 
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            throw new ArgumentException("File name is required");
+        }
+
+        if (fileSize > _settings.MaxUploadSizeBytes)
+        {
+            throw new ArgumentException("File size exceeds the allowed limit");
+        }
+
+        if (string.IsNullOrWhiteSpace(contentType) ||
+            !_settings.PhotoAllowedContentTypes.Contains(contentType, StringComparer.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Invalid file content type");
+        }
+
         var ext = Path.GetExtension(fileName).ToLowerInvariant();
-        if (!_settings.PhotoAllowedExtensions.Contains(ext))
+        if (string.IsNullOrWhiteSpace(ext) ||
+            !_settings.PhotoAllowedExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase))
         {
             throw new ArgumentException("Invalid file extension");
         }
 
-        if (!Directory.Exists(basePath))
-        {
-            _ = Directory.CreateDirectory(basePath);
-        }
+        _ = Directory.CreateDirectory(basePath);
 
         var uniqueFileName = Guid.NewGuid().ToString() + ext;
         var filePath = Path.Combine(basePath, uniqueFileName);
 
-        using (var fileStreamOnDisk = new FileStream(filePath, FileMode.Create))
-        {
-            await fileStream.CopyToAsync(fileStreamOnDisk);
-        }
+        await using var fileStreamOnDisk = new FileStream(
+            filePath,
+            FileMode.CreateNew,
+            FileAccess.Write,
+            FileShare.None,
+            bufferSize: 81920,
+            options: FileOptions.Asynchronous);
 
-        return $"/uploads/{uniqueFileName}";
+        await fileStream.CopyToAsync(fileStreamOnDisk);
+
+        return MediaFileStoragePathResolver.BuildPublicFileUrl(_settings.UploadsRequestPath, uniqueFileName);
     }
 
     public void DeleteFile(string fileUrl)
     {
         var fileName = Path.GetFileName(fileUrl);
-        var physicalPath = Path.Combine(ResolveUploadPath(), fileName);
+        var physicalPath = Path.Combine(
+            MediaFileStoragePathResolver.ResolvePhysicalUploadsPath(_settings.UploadsPath),
+            fileName);
+
         if (File.Exists(physicalPath))
         {
             File.Delete(physicalPath);
         }
-    }
-
-    private string ResolveUploadPath()
-    {
-        var configuredPath = _settings.UploadsPath;
-
-        return Path.IsPathRooted(configuredPath)
-            ? configuredPath
-            : Path.Combine(Directory.GetCurrentDirectory(), configuredPath);
     }
 }

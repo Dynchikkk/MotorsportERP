@@ -18,7 +18,6 @@ public class MediaFilesController : ControllerBase
     }
 
     [HttpPost("upload")]
-    [RequestSizeLimit(5 * 1024 * 1024)]
     public async Task<IActionResult> UploadImage(IFormFile file)
     {
         if (file == null || file.Length == 0)
@@ -28,7 +27,7 @@ public class MediaFilesController : ControllerBase
 
         var userId = User.GetUserId();
         using var stream = file.OpenReadStream();
-        var result = await _fileService.UploadImageAsync(stream, file.FileName, userId);
+        var result = await _fileService.UploadImageAsync(stream, file.FileName, file.ContentType, file.Length, userId);
 
         return Created(result.Url, result);
     }
