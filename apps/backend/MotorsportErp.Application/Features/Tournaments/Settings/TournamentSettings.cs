@@ -1,4 +1,4 @@
-﻿namespace MotorsportErp.Application.Common.Settings;
+﻿namespace MotorsportErp.Application.Features.Tournaments.Settings;
 
 public class TournamentSettings
 {
