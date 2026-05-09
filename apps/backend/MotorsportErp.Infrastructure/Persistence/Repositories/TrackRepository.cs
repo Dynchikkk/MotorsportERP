@@ -83,6 +83,64 @@ public class TrackRepository : ITrackRepository
         _ = await _context.SaveChangesAsync();
     }
 
+    public async Task<TrackVotingInfo?> GetVotingInfoAsync(Guid trackId)
+    {
+        return await _context.Tracks
+            .Where(t => t.Id == trackId)
+            .Select(t => new TrackVotingInfo(t.Status, t.CreatedById, t.ConfirmationThreshold))
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<bool?> GetUserVoteIsPositiveAsync(Guid trackId, Guid userId)
+    {
+        return await _context.TrackVotes
+            .Where(v => v.TrackId == trackId && v.UserId == userId)
+            .Select(v => (bool?)v.IsPositive)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task PersistUserVoteAsync(Guid trackId, Guid userId, bool isPositive)
+    {
+        TrackVote? existingVote = await _context.TrackVotes
+            .FirstOrDefaultAsync(v => v.TrackId == trackId && v.UserId == userId);
+
+        if (existingVote == null)
+        {
+            _ = await _context.TrackVotes.AddAsync(new TrackVote
+            {
+                Id = Guid.NewGuid(),
+                TrackId = trackId,
+                UserId = userId,
+                IsPositive = isPositive,
+            });
+        }
+        else
+        {
+            existingVote.IsPositive = isPositive;
+        }
+
+        int othersPositiveCount = await _context.TrackVotes
+            .CountAsync(v =>
+                v.TrackId == trackId &&
+                v.IsPositive &&
+                v.UserId != userId);
+
+        int totalPositive = othersPositiveCount + (isPositive ? 1 : 0);
+
+        Track? track = await _context.Tracks.FirstOrDefaultAsync(t => t.Id == trackId);
+        if (track == null)
+        {
+            throw new KeyNotFoundException("Track not found");
+        }
+
+        if (totalPositive >= track.ConfirmationThreshold)
+        {
+            track.Status = TrackStatus.Confirmed;
+        }
+
+        _ = await _context.SaveChangesAsync();
+    }
+
     public async Task AddAsync(Track entity)
     {
         _ = await _context.Tracks.AddAsync(entity);
@@ -91,7 +149,12 @@ public class TrackRepository : ITrackRepository
 
     public async Task UpdateAsync(Track entity)
     {
-        _ = _context.Tracks.Update(entity);
+        if (_context.Entry(entity).State == EntityState.Detached)
+        {
+            _ = _context.Tracks.Attach(entity);
+            _context.Entry(entity).State = EntityState.Modified;
+        }
+
         _ = await _context.SaveChangesAsync();
     }
 

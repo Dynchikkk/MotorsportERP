@@ -106,7 +106,12 @@ public class TournamentRepository : ITournamentRepository
 
     public async Task UpdateAsync(Tournament entity)
     {
-        _ = _context.Tournaments.Update(entity);
+        if (_context.Entry(entity).State == EntityState.Detached)
+        {
+            _ = _context.Tournaments.Attach(entity);
+            _context.Entry(entity).State = EntityState.Modified;
+        }
+
         _ = await _context.SaveChangesAsync();
     }
 
@@ -168,7 +173,6 @@ public class TournamentRepository : ITournamentRepository
             }
 
             application.Status = TournamentApplicationStatus.Approved;
-            _ = _context.TournamentApplications.Update(application);
             _ = await _context.SaveChangesAsync();
 
             var tournament = await _context.Tournaments.FindAsync(application.TournamentId);
@@ -180,7 +184,6 @@ public class TournamentRepository : ITournamentRepository
                 if (approvedCount >= tournament.RequiredParticipants)
                 {
                     tournament.Status = TournamentStatus.Confirmed;
-                    _ = _context.Tournaments.Update(tournament);
                     _ = await _context.SaveChangesAsync();
                 }
             }

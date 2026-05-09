@@ -47,10 +47,23 @@ public class TrackService : ITrackService
         };
     }
 
-    public async Task<TrackDetailsResponse> GetByIdAsync(Guid id)
+    public async Task<TrackDetailsResponse> GetByIdAsync(Guid id, Guid? viewerUserId = null)
     {
         Track track = await _trackRepository.GetByIdAsync(id) ?? throw new KeyNotFoundException("Track not found");
-        return TrackMapper.ToDetails(track);
+        TrackDetailsResponse response = TrackMapper.ToDetails(track);
+
+        if (viewerUserId.HasValue)
+        {
+            bool? isPositive = await _trackRepository.GetUserVoteIsPositiveAsync(id, viewerUserId.Value);
+
+            response.CurrentUserVote = new TrackCurrentUserVoteDto
+            {
+                HasVoted = isPositive.HasValue,
+                IsPositive = isPositive,
+            };
+        }
+
+        return response;
     }
 
     public async Task<Guid> CreateAsync(Guid userId, TrackCreateRequest request)
@@ -84,40 +97,20 @@ public class TrackService : ITrackService
             throw new UnauthorizedAccessException("User is blocked");
         }
 
-        var track = await _trackRepository.GetByIdAsync(trackId) ?? throw new KeyNotFoundException("Track not found");
-        if (track.Status != TrackStatus.Unofficial)
+        var votingInfo =
+            await _trackRepository.GetVotingInfoAsync(trackId) ??
+            throw new KeyNotFoundException("Track not found");
+        if (votingInfo.Status != TrackStatus.Unofficial)
         {
             throw new InvalidOperationException("Can only vote for unofficial tracks");
         }
 
-        if (track.CreatedById == userId)
+        if (votingInfo.CreatedById == userId)
         {
             throw new InvalidOperationException("Cannot vote for your own track");
         }
 
-        var existingVote = track.Votes.FirstOrDefault(v => v.UserId == userId);
-        if (existingVote != null)
-        {
-            existingVote.IsPositive = isPositive;
-        }
-        else
-        {
-            track.Votes.Add(new TrackVote
-            {
-                Id = Guid.NewGuid(),
-                TrackId = trackId,
-                UserId = userId,
-                IsPositive = isPositive
-            });
-        }
-
-        var positiveVotesCount = track.Votes.Count(v => v.IsPositive);
-        if (positiveVotesCount >= track.ConfirmationThreshold)
-        {
-            track.Status = TrackStatus.Confirmed;
-        }
-
-        await _trackRepository.UpdateAsync(track);
+        await _trackRepository.PersistUserVoteAsync(trackId, userId, isPositive);
     }
 
     public async Task ConfirmAsync(Guid userId, Guid trackId)

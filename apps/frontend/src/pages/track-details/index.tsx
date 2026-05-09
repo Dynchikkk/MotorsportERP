@@ -87,6 +87,11 @@ export const TrackDetailsPage = () => {
             <div className="cluster">
               <Pill tone="muted">{track.voteCount} голосов</Pill>
               <Pill tone="muted">Порог: {track.confirmationThreshold}</Pill>
+              {canVote && track.currentUserVote?.hasVoted ? (
+                <Pill tone="accent">
+                  {track.currentUserVote.isPositive === true ? 'Ваш голос: за' : 'Ваш голос: против'}
+                </Pill>
+              ) : null}
             </div>
             {track.createdBy ? <UserBadge user={track.createdBy} /> : null}
             {track.photos.length ? (
@@ -98,7 +103,13 @@ export const TrackDetailsPage = () => {
             ) : null}
           </div>
           <div className="stack">
-            {canVote ? <VoteTrackAction trackId={track.id} onVoted={data.reload} /> : null}
+            {canVote ? (
+              <VoteTrackAction
+                trackId={track.id}
+                onVoted={data.reload}
+                currentUserVote={track.currentUserVote}
+              />
+            ) : null}
             {canEdit ? (
               <div className="inline-actions">
                 <Button variant="secondary" onClick={() => setIsEditing((value) => !value)}>

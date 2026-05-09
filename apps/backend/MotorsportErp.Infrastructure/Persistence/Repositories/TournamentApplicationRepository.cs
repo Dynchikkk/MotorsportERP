@@ -24,7 +24,12 @@ public class TournamentApplicationRepository : ITournamentApplicationRepository
 
     public async Task UpdateAsync(TournamentApplication application)
     {
-        _ = _context.TournamentApplications.Update(application);
+        if (_context.Entry(application).State == EntityState.Detached)
+        {
+            _ = _context.TournamentApplications.Attach(application);
+            _context.Entry(application).State = EntityState.Modified;
+        }
+
         _ = await _context.SaveChangesAsync();
     }
 

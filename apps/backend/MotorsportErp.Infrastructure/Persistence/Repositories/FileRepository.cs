@@ -27,7 +27,12 @@ public class FileRepository : IFileRepository
 
     public async Task UpdateAsync(MediaFile entity)
     {
-        _ = _context.MediaFiles.Update(entity);
+        if (_context.Entry(entity).State == EntityState.Detached)
+        {
+            _ = _context.MediaFiles.Attach(entity);
+            _context.Entry(entity).State = EntityState.Modified;
+        }
+
         _ = await _context.SaveChangesAsync();
     }
 
