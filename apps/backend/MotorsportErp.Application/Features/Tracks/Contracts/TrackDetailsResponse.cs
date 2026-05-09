@@ -16,6 +16,7 @@ public class TrackDetailsResponse
 
     public int VoteCount { get; set; }
     public int ConfirmationThreshold { get; set; }
+    public TrackCurrentUserVoteDto? CurrentUserVote { get; set; }
     public UserResponse? CreatedBy { get; set; }
     public List<TournamentResponse> UpcomingTournaments { get; set; } = [];
     public List<TournamentResponse> PastTournaments { get; set; } = [];

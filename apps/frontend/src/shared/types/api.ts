@@ -163,9 +163,15 @@ export type TrackResponse = {
   voteCount: number;
 };
 
+export type TrackCurrentUserVoteSummary = {
+  hasVoted: boolean;
+  isPositive: boolean | null;
+};
+
 export type TrackDetailsResponse = TrackResponse & {
   confirmationThreshold: number;
   createdBy?: UserResponse | null;
+  currentUserVote?: TrackCurrentUserVoteSummary | null;
   upcomingTournaments: TournamentResponse[];
   pastTournaments: TournamentResponse[];
 };

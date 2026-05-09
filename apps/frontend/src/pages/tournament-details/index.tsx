@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/app/providers/AuthProvider';
+import { CarPhotoThumb } from '@/entities/car/ui/CarPhotoThumb';
 import { UserBadge } from '@/entities/user/ui/UserBadge';
 import { TournamentApplyForm } from '@/features/tournaments/apply-to-tournament/TournamentApplyForm';
 import { AddResultForm } from '@/features/tournaments/add-result/AddResultForm';
@@ -211,10 +212,14 @@ export const TournamentDetailsPage = () => {
               <Pill tone="muted">Заявок: {tournament.applicationsCount}</Pill>
               <Pill tone="muted">Минимальный стаж: {tournament.requiredRaceCount}</Pill>
             </div>
-            {tournament.photos.length ? (
-              <div className="photo-strip">
+            {tournament.photos.length > 0 ? (
+              <div className="photo-strip" style={{ marginTop: 8 }}>
                 {tournament.photos.map((photo) => (
-                  <img key={photo.id} src={resolveMediaUrl(photo.url) ?? ''} alt={tournament.name} />
+                  <img
+                    key={photo.id}
+                    src={resolveMediaUrl(photo.url) ?? ''}
+                    alt={tournament.name}
+                  />
                 ))}
               </div>
             ) : null}
@@ -352,23 +357,28 @@ export const TournamentDetailsPage = () => {
               <div className="list">
                 {applications.data.map((application) => (
                   <div key={application.id} className="list-item">
-                    <div className="toolbar">
-                      <UserBadge user={application.user} />
-                      <Pill tone="muted">{tournamentApplicationStatusLabels[application.status]}</Pill>
+                    <div className="list-item__thumb-row">
+                      <CarPhotoThumb car={application.car} />
+                      <div className="list-item__body">
+                        <div className="toolbar">
+                          <UserBadge user={application.user} />
+                          <Pill tone="muted">{tournamentApplicationStatusLabels[application.status]}</Pill>
+                        </div>
+                        <p className="muted" style={{ margin: '8px 0' }}>
+                          Автомобиль: {application.car.brand} {application.car.model}
+                        </p>
+                        {application.status === 0 ? (
+                          <ApplicationActions
+                            applicationId={application.id}
+                            onChanged={async () => {
+                              await applications.reload();
+                              await data.reload();
+                              await refreshCurrentUser();
+                            }}
+                          />
+                        ) : null}
+                      </div>
                     </div>
-                    <p className="muted" style={{ margin: '8px 0' }}>
-                      Автомобиль: {application.car.brand} {application.car.model}
-                    </p>
-                    {application.status === 0 ? (
-                      <ApplicationActions
-                        applicationId={application.id}
-                        onChanged={async () => {
-                          await applications.reload();
-                          await data.reload();
-                          await refreshCurrentUser();
-                        }}
-                      />
-                    ) : null}
                   </div>
                 ))}
               </div>
@@ -394,11 +404,16 @@ export const TournamentDetailsPage = () => {
           <div className="list">
             {tournament.participants.map((participant) => (
               <div key={participant.id} className="list-item">
-                <div className="toolbar">
-                  <UserBadge user={participant.user} />
-                  <Pill tone="success">
-                    {participant.car.brand} {participant.car.model}
-                  </Pill>
+                <div className="list-item__thumb-row">
+                  <CarPhotoThumb car={participant.car} />
+                  <div className="list-item__body">
+                    <div className="toolbar">
+                      <UserBadge user={participant.user} />
+                      <Pill tone="success">
+                        {participant.car.brand} {participant.car.model}
+                      </Pill>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

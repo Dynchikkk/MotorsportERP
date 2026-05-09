@@ -27,6 +27,9 @@ Start stack:
 docker compose up -d
 ```
 
+**Important**
+If you have problems when opening pages in the format _localhost:port_, try to change it to _127.0.0.1:port_.
+
 ## Docker run modes
 
 - Full stack: `docker compose up -d`

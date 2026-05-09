@@ -11,6 +11,13 @@ public static class ClaimsPrincipalExtensions
         return !Guid.TryParse(value, out var userId) ? throw new UnauthorizedAccessException("Invalid user id") : userId;
     }
 
+    public static Guid? TryGetUserId(this ClaimsPrincipal user)
+    {
+        var value = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        return Guid.TryParse(value, out var userId) ? userId : null;
+    }
+
     public static string GetEmail(this ClaimsPrincipal user)
     {
         var email = (user.FindFirst(ClaimTypes.Email)?.Value) ?? throw new UnauthorizedAccessException("Email not found in token");

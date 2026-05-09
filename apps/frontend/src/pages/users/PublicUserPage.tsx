@@ -1,6 +1,7 @@
 import { UserBadge } from '@/entities/user/ui/UserBadge';
 import { useAsyncData } from '@/shared/lib/hooks/useAsyncData';
 import { usersApi } from '@/shared/api/users';
+import { resolveMediaUrl } from '@/shared/lib/media';
 import { tournamentApplicationStatusLabels, tournamentStatusLabels } from '@/shared/lib/format';
 import { Card } from '@/shared/ui/Card';
 import { EmptyState } from '@/shared/ui/EmptyState';
@@ -71,6 +72,18 @@ export const PublicUserPage = () => {
                 <p className="muted" style={{ margin: '6px 0' }}>
                   {car.year} • {car.description || 'Без описания'}
                 </p>
+                {car.photos.length > 0 ? (
+                  <div className="photo-strip" style={{ marginTop: 10 }}>
+                    {car.photos.map((photo) => (
+                      <img
+                        key={photo.id}
+                        className="photo-frame"
+                        src={resolveMediaUrl(photo.url) ?? ''}
+                        alt={`${car.brand} ${car.model}`}
+                      />
+                    ))}
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>

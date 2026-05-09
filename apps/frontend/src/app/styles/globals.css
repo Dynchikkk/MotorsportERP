@@ -666,6 +666,17 @@ button {
   background: rgba(255, 255, 255, 0.02);
 }
 
+.list-item__thumb-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.list-item__body {
+  min-width: 0;
+  flex: 1;
+}
+
 .upload {
   display: flex;
   flex-wrap: wrap;

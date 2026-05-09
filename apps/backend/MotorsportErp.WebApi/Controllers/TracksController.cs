@@ -57,7 +57,8 @@ public class TracksController : ControllerBase
     [ProducesResponseType(typeof(TrackDetailsResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<TrackDetailsResponse>> GetById(Guid id)
     {
-        var result = await _trackService.GetByIdAsync(id);
+        Guid? viewerUserId = User.Identity?.IsAuthenticated == true ? User.TryGetUserId() : null;
+        var result = await _trackService.GetByIdAsync(id, viewerUserId);
         return Ok(result);
     }
 

@@ -13,4 +13,10 @@ public interface ITrackRepository : IBaseRepository<Track>, IPagedRepository<Tra
     Task<bool> HasUserVotedAsync(Guid trackId, Guid userId);
 
     Task AddVoteAsync(TrackVote vote);
+
+    Task<TrackVotingInfo?> GetVotingInfoAsync(Guid trackId);
+
+    Task PersistUserVoteAsync(Guid trackId, Guid userId, bool isPositive);
+
+    Task<bool?> GetUserVoteIsPositiveAsync(Guid trackId, Guid userId);
 }

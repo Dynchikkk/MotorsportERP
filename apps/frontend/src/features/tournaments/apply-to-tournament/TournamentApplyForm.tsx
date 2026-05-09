@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
+import { CarPhotoThumb } from '@/entities/car/ui/CarPhotoThumb';
 import { tournamentsApi } from '@/shared/api/tournaments';
 import { getErrorMessage } from '@/shared/lib/errors';
 import { carClassLabels, formatCarName } from '@/shared/lib/format';
@@ -17,6 +18,7 @@ type TournamentApplyFormProps = {
 export const TournamentApplyForm = ({ tournament, cars, onApplied }: TournamentApplyFormProps) => {
   const eligibleCars = cars.filter((car) => car.carClass === tournament.allowedCarClass);
   const [carId, setCarId] = useState(eligibleCars[0]?.id ?? '');
+  const selectedCar = useMemo(() => eligibleCars.find((car) => car.id === carId), [eligibleCars, carId]);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -71,6 +73,16 @@ export const TournamentApplyForm = ({ tournament, cars, onApplied }: TournamentA
             <option value="">Нет подходящих автомобилей</option>
           )}
         </SelectField>
+        {selectedCar ? (
+          <div className="list-item__thumb-row" style={{ marginTop: 8 }}>
+            <CarPhotoThumb car={selectedCar} />
+            {selectedCar.photos.length === 0 ? (
+              <p className="muted list-item__body" style={{ margin: 0 }}>
+                У этого авто пока нет фото в гараже.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
         {feedback ? <Notice tone={feedback.type} message={feedback.message} /> : null}
         <Button type="submit" variant="primary" disabled={isSubmitting || !eligibleCars.length || !carId}>
           {isSubmitting ? 'Отправляем...' : 'Подать заявку'}

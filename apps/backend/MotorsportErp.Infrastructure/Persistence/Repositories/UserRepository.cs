@@ -82,7 +82,12 @@ public class UserRepository : IUserRepository
 
     public async Task UpdateAsync(User entity)
     {
-        _ = _context.Users.Update(entity);
+        if (_context.Entry(entity).State == EntityState.Detached)
+        {
+            _ = _context.Users.Attach(entity);
+            _context.Entry(entity).State = EntityState.Modified;
+        }
+
         _ = await _context.SaveChangesAsync();
     }
 

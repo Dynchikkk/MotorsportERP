@@ -50,7 +50,12 @@ public class CarRepository : ICarRepository
 
     public async Task UpdateAsync(Car entity)
     {
-        _ = _context.Cars.Update(entity);
+        if (_context.Entry(entity).State == EntityState.Detached)
+        {
+            _ = _context.Cars.Attach(entity);
+            _context.Entry(entity).State = EntityState.Modified;
+        }
+
         _ = await _context.SaveChangesAsync();
     }
 

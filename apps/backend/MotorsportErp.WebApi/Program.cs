@@ -1,8 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using MotorsportErp.Application.Common.Settings;
-using MotorsportErp.Infrastructure.Files;
 using MotorsportErp.Infrastructure.Persistence;
-using MotorsportErp.Infrastructure.Persistence.Settings;
 using MotorsportErp.Infrastructure.Security;
 using MotorsportErp.WebApi.Extensions;
 using MotorsportErp.WebApi.Middlewares;
@@ -10,11 +7,7 @@ using MotorsportErp.WebApi.Middlewares;
 var builder = WebApplication.CreateBuilder(args);
 
 // Options
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
-builder.Services.Configure<TrackSettings>(builder.Configuration.GetSection("TrackSettings"));
-builder.Services.Configure<TournamentSettings>(builder.Configuration.GetSection("TournamentSettings"));
-builder.Services.Configure<SeedSettings>(builder.Configuration.GetSection("SeedSettings"));
-builder.Services.Configure<MediaFileStorageSettings>(builder.Configuration.GetSection("MediaFileStorageSettings"));
+builder.Services.AddApplicationOptions(builder.Configuration);
 
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -100,7 +93,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseMiddleware<ExceptionMiddleware>();
 
-app.UseFileStorage(builder.Configuration);
+app.UseFileStorage();
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
