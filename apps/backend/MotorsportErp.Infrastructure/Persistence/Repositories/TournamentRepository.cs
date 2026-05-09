@@ -3,6 +3,7 @@ using MotorsportErp.Application.Common.Interfaces.Repositories;
 using MotorsportErp.Application.Features.Tournaments.Contracts;
 using MotorsportErp.Domain.Tournaments;
 using MotorsportErp.Infrastructure.Extensions;
+using System.Data;
 using System.Linq.Expressions;
 
 namespace MotorsportErp.Infrastructure.Persistence.Repositories;
@@ -162,38 +163,65 @@ public class TournamentRepository : ITournamentRepository
 
     public async Task ApproveApplicationAtomicallyAsync(Guid applicationId)
     {
-        using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead);
+        var strategy = _context.Database.CreateExecutionStrategy();
 
-        try
+        await strategy.ExecuteAsync(async () =>
         {
-            var application = await _context.TournamentApplications.FindAsync(applicationId);
-            if (application == null || application.Status != TournamentApplicationStatus.Pending)
-            {
-                return;
-            }
+            await using var transaction = await _context.Database
+                .BeginTransactionAsync(IsolationLevel.Serializable);
 
-            application.Status = TournamentApplicationStatus.Approved;
-            _ = await _context.SaveChangesAsync();
-
-            var tournament = await _context.Tournaments.FindAsync(application.TournamentId);
-            if (tournament != null && tournament.Status == TournamentStatus.RegistrationOpen)
+            try
             {
+                var application = await _context.TournamentApplications
+                    .FirstOrDefaultAsync(a => a.Id == applicationId);
+
+                if (application == null)
+                {
+                    throw new KeyNotFoundException("Application not found");
+                }
+
+                if (application.Status != TournamentApplicationStatus.Pending)
+                {
+                    throw new InvalidOperationException("Application is not pending");
+                }
+
+                var tournament = await _context.Tournaments
+                    .FirstOrDefaultAsync(t => t.Id == application.TournamentId);
+
+                if (tournament == null)
+                {
+                    throw new KeyNotFoundException("Tournament not found");
+                }
+
+                if (tournament.Status != TournamentStatus.RegistrationOpen)
+                {
+                    throw new InvalidOperationException(
+                        "Applications can only be approved while registration is open.");
+                }
+
+                application.Status = TournamentApplicationStatus.Approved;
+
+                await _context.SaveChangesAsync();
+
                 var approvedCount = await _context.TournamentApplications
-                    .CountAsync(a => a.TournamentId == tournament.Id && a.Status == TournamentApplicationStatus.Approved);
+                    .CountAsync(a =>
+                        a.TournamentId == tournament.Id &&
+                        a.Status == TournamentApplicationStatus.Approved);
 
                 if (approvedCount >= tournament.RequiredParticipants)
                 {
                     tournament.Status = TournamentStatus.Confirmed;
-                    _ = await _context.SaveChangesAsync();
-                }
-            }
 
-            await transaction.CommitAsync();
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        });
     }
 }
